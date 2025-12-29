@@ -19,8 +19,8 @@ CREATE TYPE statut_adoption AS ENUM ('demande', 'acceptee', 'rejet_environnement
 CREATE TABLE CONTACT
 (
     id                SERIAL PRIMARY KEY,
-    nom               VARCHAR(100) NOT NULL CHECK (length(nom) >= 2),
-    prenom            VARCHAR(100) NOT NULL CHECK (length(prenom) >= 2),
+    nom               VARCHAR(100) NOT NULL CHECK (LENGTH(nom) >= 2),
+    prenom            VARCHAR(100) NOT NULL CHECK (LENGTH(prenom) >= 2),
     rue               VARCHAR(255),
     cp                VARCHAR(10),
     localite          VARCHAR(100),
@@ -61,9 +61,9 @@ CREATE TABLE ANIMAL
     particularités     TEXT,
     description        TEXT,
     date_sterilisation DATE,
-    date_naissance     DATE         NOT NULL CHECK (date_naissance <= CURRENT_DATE),
-    date_deces         DATE,
-    deleted_at         DATE,
+    date_naissance     TIMESTAMPTZ  NOT NULL CHECK (date_naissance <= CURRENT_DATE),
+    date_deces         TIMESTAMPTZ,
+    deleted_at         TIMESTAMPTZ,
     CONSTRAINT chk_id CHECK (id ~ '^[0-9]{11}$'),
     CONSTRAINT chk_sterilisation CHECK (
         date_sterilisation IS NULL OR date_sterilisation > date_naissance
@@ -82,7 +82,7 @@ CREATE TABLE ANI_ENTREE
 (
     id         SERIAL PRIMARY KEY,
     raison     raison_entree                   NOT NULL,
-    date       DATE                            NOT NULL,
+    date       TIMESTAMPTZ                     NOT NULL,
     ani_id     CHAR(11) REFERENCES ANIMAL (id) NOT NULL,
     contact_id INT REFERENCES CONTACT (id)     NOT NULL
 );
@@ -91,7 +91,7 @@ CREATE TABLE ANI_SORTIE
 (
     id         SERIAL PRIMARY KEY,
     raison     raison_sortie                   NOT NULL,
-    date       DATE                            NOT NULL,
+    date       TIMESTAMPTZ                     NOT NULL,
     ani_id     CHAR(11) REFERENCES ANIMAL (id) NOT NULL,
     contact_id INT REFERENCES CONTACT (id)     NOT NULL
 );
@@ -100,7 +100,7 @@ CREATE TABLE ADOPTION
 (
     id           SERIAL PRIMARY KEY,
     statut       statut_adoption                 NOT NULL,
-    date_demande DATE                            NOT NULL,
+    date_demande TIMESTAMPTZ                     NOT NULL,
     ani_id       CHAR(11) REFERENCES ANIMAL (id) NOT NULL,
     adoptant_id  INT REFERENCES CONTACT (id)     NOT NULL
 );
@@ -108,8 +108,8 @@ CREATE TABLE ADOPTION
 CREATE TABLE FAMILLE_ACCUEIL
 (
     id                 SERIAL PRIMARY KEY,
-    date_debut         DATE                            NOT NULL,
-    date_fin           DATE,
+    date_debut         TIMESTAMPTZ                     NOT NULL,
+    date_fin           TIMESTAMPTZ,
     ani_id             CHAR(11) REFERENCES ANIMAL (id) NOT NULL,
     famille_accueil_id INT REFERENCES CONTACT (id)     NOT NULL,
     CONSTRAINT chk_dates_accueil CHECK (date_fin IS NULL OR date_fin >= date_debut)
@@ -118,7 +118,7 @@ CREATE TABLE FAMILLE_ACCUEIL
 CREATE TABLE VACCINATION
 (
     id     SERIAL PRIMARY KEY,
-    date   DATE                            ,
+    date   TIMESTAMPTZ,
     ani_id CHAR(11) REFERENCES ANIMAL (id) NOT NULL,
     vac_id INT REFERENCES VACCIN (id)      NOT NULL,
     CONSTRAINT uq_vaccin_animal_date UNIQUE (ani_id, vac_id, date)
@@ -502,7 +502,7 @@ BEGIN
                WHERE ani_id = p_ani_id
                  AND (date_fin IS NULL OR date_fin >= CURRENT_DATE)) THEN
         RAISE EXCEPTION 'Cet animal est déjà dans une famille d''accueil.';
-    end if;
+    END IF;
 
     INSERT INTO FAMILLE_ACCUEIL (ani_id, famille_accueil_id, date_debut, date_fin)
     VALUES (p_ani_id, p_famille_accueil_id, CURRENT_DATE, p_date_fin);
@@ -595,29 +595,27 @@ BEGIN
     END IF;
 
     -- check (s'il n'y a pas de sortie) OU (si il n'y a pas d'entrée après la dernière sortie et que la dernière sortie est une adoption)
-    IF EXISTS (
-        SELECT 1
-        FROM ANIMAL a
-        WHERE a.id = p_ani_id
-          AND (
-              NOT EXISTS (SELECT 1
-                          FROM ANI_SORTIE s
-                          WHERE s.ani_id = a.id)
-              OR EXISTS (SELECT 1
-                         FROM ANI_SORTIE s
-                         WHERE s.ani_id = a.id
-                         AND s.date >= (SELECT MAX(e.date)
-                                        FROM ANI_ENTREE e
-                                        WHERE e.ani_id = a.id)
-                         AND s.raison = 'adoption')
-          )        
-    )
+    IF EXISTS (SELECT 1
+               FROM ANIMAL a
+               WHERE a.id = p_ani_id
+                 AND (
+                   NOT EXISTS (SELECT 1
+                               FROM ANI_SORTIE s
+                               WHERE s.ani_id = a.id)
+                       OR EXISTS (SELECT 1
+                                  FROM ANI_SORTIE s
+                                  WHERE s.ani_id = a.id
+                                    AND s.date >= (SELECT MAX(e.date)
+                                                   FROM ANI_ENTREE e
+                                                   WHERE e.ani_id = a.id)
+                                    AND s.raison = 'adoption')
+                   ))
     THEN
 
         RAISE EXCEPTION 'Impossible de créer une adoption : l''animal n''est pas actuellement disponible pour adoption.';
     ELSE
         INSERT INTO ADOPTION (ani_id, adoptant_id, statut, date_demande)
-            VALUES (p_ani_id, p_adoptant_id, 'demande', CURRENT_DATE);
+        VALUES (p_ani_id, p_adoptant_id, 'demande', CURRENT_DATE);
     END IF;
 END;
 $$ LANGUAGE plpgsql;
@@ -648,7 +646,8 @@ CREATE OR REPLACE PROCEDURE ps_ajouter_vaccination_animal(
     p_ani_id CHAR(11),
     p_vac_id int,
     p_date DATE
-) AS $$
+) AS
+$$
 BEGIN
     -- check si l'animal est décédé
     IF EXISTS (SELECT 1
@@ -668,7 +667,8 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE PROCEDURE ps_supprimer_vaccination_animal(
     p_ani_id CHAR(11),
     p_vac_id int
-) AS $$
+) AS
+$$
 BEGIN
     DELETE
     FROM VACCINATION
@@ -676,7 +676,7 @@ BEGIN
       AND vac_id = p_vac_id;
 END;
 $$ LANGUAGE plpgsql;
-    
+
 
 -- ===========================================================================================================================================================
 -- VIEWS
