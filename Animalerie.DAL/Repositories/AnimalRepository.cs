@@ -1,4 +1,5 @@
 ﻿using Animalerie.DAL.Repositories.Interfaces;
+using Animalerie.Domain.CustomEnums.Database;
 using Animalerie.Domain.Models;
 using System.Data.Common;
 using Tools.Database;
@@ -14,17 +15,22 @@ namespace Animalerie.DAL.Repositories
             _dbContext = dbContext;
         }
 
-        public void AjouterAnimal(Animal animal, string[] couleurs, Contact contact)
+        public void AjouterAnimal(Animal animal, string[] couleurs, Contact contact, RaisonEntree raison, DateTime dateEntree)
         {
             _dbContext.Connection.ExecuteNonQuery("ps_ajouter_animal", true, new
             {
+                p_contact_id = contact.Id,
                 p_id = animal.Id,
                 p_nom = animal.Nom,
                 p_type = animal.Type,
                 p_sexe = animal.Sexe,
                 p_date_naissance = animal.DateNaissance,
                 p_couleurs = couleurs,
-                p_contact_id = contact.Id
+                p_particularites = animal.Particularites,
+                p_description = animal.Description,
+                p_date_sterilisation = animal.DateSterilisation,
+                p_raison = raison,
+                p_entree_date = dateEntree
             });
         }
 

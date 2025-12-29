@@ -5,11 +5,17 @@ using Animalerie.ConsoleApp.Screens;
 using Animalerie.DAL.Repositories;
 using Animalerie.DAL.Repositories.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Tools.Database;
 
-string connectionString = @"Host=localhost;Username=devuser;Password=devpass;Database=RefugeAnimaux";
+string connectionString = @"Host=localhost;Username=devuser;Password=devpassword;Database=refugeanimaux";
 
 IServiceCollection services = new ServiceCollection();
+
+#region Database
 services.AddSingleton<AnimalerieDBContext>(sp => AnimalerieDBContext.Build(connectionString));
+
+#endregion
+
 
 #region Repositories
 services.AddSingleton<IContactRepository, ContactRepository>();
@@ -33,4 +39,5 @@ var serviceProvider = services.BuildServiceProvider();
 var dbContext = serviceProvider.GetRequiredService<AnimalerieDBContext>();
 var menu = serviceProvider.GetRequiredService<EcranPrincipal>();
 
+dbContext.Connection.EnsureValidConnection();
 menu.Display();

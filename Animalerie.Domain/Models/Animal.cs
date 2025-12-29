@@ -16,7 +16,7 @@ namespace Animalerie.Domain.Models
         public DateTime? DeletedAt { get; set; }
         public string[] Couleurs { get; set; }
         
-        public Animal(string id, string nom, TypeAnimal type, SexeAnimal sexe, string particularites, string description, DateTime? dateSterilisation, DateTime dateNaissance, DateTime? dateDeces, DateTime? deletedAt, string[] couleurs)
+        public Animal(string id, string nom, TypeAnimal type, SexeAnimal sexe, string particularites, string description, DateTime? dateSterilisation, DateTime dateNaissance, string[] couleurs, DateTime? dateDeces = null, DateTime? deletedAt = null)
         {
             Id = id;
             Nom = nom;

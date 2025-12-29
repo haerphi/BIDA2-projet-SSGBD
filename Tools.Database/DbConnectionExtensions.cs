@@ -6,7 +6,7 @@ namespace Tools.Database
 {
     public static class DbConnectionExtensions
     {
-        private static void EnsureValidConnection(this DbConnection dbConnection)
+        public static void EnsureValidConnection(this DbConnection dbConnection)
         {
             ArgumentNullException.ThrowIfNull(dbConnection);
 
@@ -21,7 +21,7 @@ namespace Tools.Database
             }
         }
 
-        private static async Task EnsureValidConnectionAsync(this DbConnection dbConnection)
+        public static async Task EnsureValidConnectionAsync(this DbConnection dbConnection)
         {
             ArgumentNullException.ThrowIfNull(dbConnection);
 

@@ -24,5 +24,10 @@ namespace Animalerie.BLL.Services
 
             return contact;
         }
+
+        public IEnumerable<Contact> Lister()
+        {
+            return _contactRepository.Lister();
+        }
     }
 }

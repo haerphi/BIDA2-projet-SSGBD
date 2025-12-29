@@ -1,5 +1,6 @@
 ﻿using Animalerie.BLL.Services.Interfaces;
 using Animalerie.DAL.Repositories.Interfaces;
+using Animalerie.Domain.CustomEnums.Database;
 using Animalerie.Domain.Models;
 
 namespace Animalerie.BLL.Services
@@ -15,13 +16,13 @@ namespace Animalerie.BLL.Services
             _contactService = contactService;
         }
 
-        public void Ajouter(Animal animal, string[] couleurs, int contactId)
+        public void Ajouter(Animal animal, string[] couleurs, int contactId, RaisonEntree raison, DateTime dateEntree)
         {
             // Récupération du contact associé
             Contact contact = _contactService.Consulter(contactId);
 
             // Ajout de l'animal via le repository
-            _animalRepository.AjouterAnimal(animal, couleurs, contact);
+            _animalRepository.AjouterAnimal(animal, couleurs, contact, raison, dateEntree);
 
             // TODO récupérer l'animal ajouté (ou au moins son ID)
         }

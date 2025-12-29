@@ -24,5 +24,14 @@ namespace Animalerie.DAL.Repositories
                 new { id }
             ).FirstOrDefault();
         }
+
+        public IEnumerable<Contact> Lister()
+        {
+            return _connection.ExecuteReader<Contact>(
+                "SELECT id, nom, prenom, rue, cp, localite, registre_national, gsm, telephone, email FROM CONTACT",
+                r => r.ToContact(),
+                false
+            );
+        }
     }
 }
