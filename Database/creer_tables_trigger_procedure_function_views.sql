@@ -130,6 +130,7 @@ CREATE TABLE ANI_COMPATIBILITE
     description TEXT,
     comp_id     INT REFERENCES COMPATIBILITE (id) NOT NULL,
     ani_id      CHAR(11) REFERENCES ANIMAL (id)   NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT current_timestamp,
     PRIMARY KEY (comp_id, ani_id)
 );
 
@@ -143,6 +144,22 @@ CREATE TABLE PERSONNE_ROLE
 
 -- ===========================================================================================================================================================
 -- TRIGGER
+
+-- met à jour updated_at ANI_COMPATIBILITE
+CREATE OR REPLACE FUNCTION fn_update_at_ANI_COMPATIBILITE()
+    RETURNS TRIGGER AS
+    $$
+    BEGIN
+        NEW.updated_at = CURRENT_TIMESTAMP;
+        RETURN NEW;
+    END
+    $$ LANGUAGE plpgsql;
+CREATE TRIGGER trg_update_at_ANI_COMPATIBILITE
+    BEFORE UPDATE
+    ON ANI_COMPATIBILITE
+    FOR EACH ROW
+EXECUTE FUNCTION fn_update_at_ANI_COMPATIBILITE();
+
 
 -- Si date_deces IS NOT NULL, l'animal ne peut plus avoir de nouvelles entrees/sorties, vaccination
 CREATE OR REPLACE FUNCTION fn_check_animal_status()
@@ -689,6 +706,27 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Animal compatibilité
+CREATE OR REPLACE FUNCTION fn_animal_compatibilite(
+    p_ani_id CHAR(11)
+) RETURNS TABLE (
+    comp_type VARCHAR,
+    valeur BOOLEAN,
+    description TEXT,
+    updated_at TIMESTAMPTZ
+) AS
+    $$
+BEGIN
+    RETURN QUERY
+    SELECT c.type,
+           ac.valeur,
+           ac.description,
+           ac.updated_at
+    FROM ANI_COMPATIBILITE ac
+             JOIN COMPATIBILITE c ON ac.comp_id = c.id
+    WHERE ac.ani_id = p_ani_id;
+END;
+    $$ LANGUAGE plpgsql;
 -- ===========================================================================================================================================================
 -- VIEWS
 
@@ -698,3 +736,9 @@ SELECT a.*,
        fn_animal_status(a.id) AS Status
 FROM ANIMAL a
 WHERE a.deleted_at IS NULL;
+
+-- Lister les animaux avec leurs compatibilités
+CREATE OR REPLACE VIEW vue_animaux_compatibilites AS
+    SELECT c.type, ac.*
+FROM ani_compatibilite ac
+         JOIN compatibilite c ON ac.comp_id = c.id;

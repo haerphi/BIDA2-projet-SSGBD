@@ -33,6 +33,21 @@ namespace Animalerie.Domain.Models
             DeletedAt = deletedAt;
         }
 
+        public string ToString()
+        {
+            return $"\t ID: {Id}\n" +
+                   $"\t Nom: {Nom}\n" +
+                   $"\t Type: {Type}\n" +
+                   $"\t Sexe: {Sexe}\n" +
+                   $"\t Particularités: {Particularites}\n" +
+                   $"\t Description: {Description}\n" +
+                   $"\t Date de stérilisation: {(DateSterilisation.HasValue ? DateSterilisation.Value.ToShortDateString() : "N/A")}\n" +
+                   $"\t Date de naissance: {DateNaissance.ToShortDateString()}\n" +
+                   $"\t Couleurs: {string.Join(", ", Couleurs)}\n" +
+                   $"\t Date de décès: {(DateDeces.HasValue ? DateDeces.Value.ToShortDateString() : "N/A")}\n" +
+                   $"\t Status: {Status ?? "N/A"}";
+        }
+
         public string ToStringTableau()
         {
             return $"| {Id,-11} | {Nom,-12} | {Type,-10} | {Sexe,-5} | {DateNaissance.ToShortDateString(),-13} | {Status ?? "N/A"}";

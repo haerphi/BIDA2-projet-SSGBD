@@ -38,7 +38,12 @@ namespace Animalerie.DAL.Repositories
 
         public Animal? Consulter(string id)
         {
-            throw new NotImplementedException();
+            return _dbContext.Connection.ExecuteReader<Animal>(
+                "SELECT * FROM vue_animaux WHERE id = @p_id AND deleted_at IS NULL",
+                (r) => r.ToAnimal(),
+                false,
+                new { p_id = id }
+            ).FirstOrDefault();
         }
 
         public IEnumerable<Animal> Lister(AnimalFilters? filters = null, int offset = 0, int limit = 20)
@@ -85,6 +90,16 @@ namespace Animalerie.DAL.Repositories
         public void ModifierCompatibilite(string aniId, int compId, bool valeur, string? desc = null)
         {
             throw new NotImplementedException();
+        }
+
+        public IEnumerable<AniCompatibilite> ListCompatibilites(string animalId)
+        {
+            return _dbContext.Connection.ExecuteReader<AniCompatibilite>(
+                "SELECT * FROM vue_animaux_compatibilites WHERE ani_id = @p_ani_id",
+                (r) => r.ToAniCompatibilite(),
+                false,
+                new { p_ani_id = animalId }
+            );
         }
 
         public void Supprimer(string id)

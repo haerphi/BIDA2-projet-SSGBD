@@ -106,9 +106,8 @@ CALL ps_modifier_compatibilite_animal(
      );
 
 -- Lister les compatibilités d’un animal
-SELECT c.type, ac.valeur, ac.description
-FROM ani_compatibilite ac
-         JOIN compatibilite c ON ac.comp_id = c.id
+SELECT ac.*
+FROM vue_animaux_compatibilites ac
 WHERE ac.ani_id = '25122200000';
 
 -- Lister tout les animaux

@@ -10,6 +10,8 @@ namespace Animalerie.BLL.Services.Interfaces
         public IEnumerable<Animal> Lister(AnimalFilters? filters = null, int offset = 0, int limit = 20);
         public Animal Consulter(string id);
         public void Supprimer(string id);
+
         public void ModifierCompatibilite(string aniId, int compId, bool valeur, string? desc = null);
+        public IEnumerable<AniCompatibilite> ListCompatibilites(string animalId);        
     }
 }

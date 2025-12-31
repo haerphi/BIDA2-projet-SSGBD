@@ -380,5 +380,42 @@ namespace Animalerie.ConsoleApp.Ecrans
 
             } while (displayListAgain);
         }
+
+        public void Consulter()
+        {
+            Console.Clear();
+
+            Console.WriteLine("Consultation d'un animal:");
+            var errors = Inputs.ReadString(
+                prompt: "Entrez l'identifiant de l'animal à consulter (ou tapez 'quit') : \n>",
+                validators: [InputValidator.Match(AnimalPatterns.ID)],
+                userInput: out string inputId,
+                exitCondition: InputExitCondition.IsQuitCommand,
+                displayError: Inputs.DisplayErrors
+            );
+
+            if (errors.Contains(Inputs.QUIT_ERROR))
+            {
+                Console.WriteLine("Consultation annulée.");
+                return;
+            }
+
+            Animal? animal = _animalService.Consulter(inputId);
+            if (animal is null)
+            {
+                Console.WriteLine($"Aucun animal trouvé avec l'identifiant {inputId}.");
+                return;
+            }
+
+            Console.WriteLine("Détails de l'animal:");
+            Console.WriteLine(animal.ToString());
+
+            Console.WriteLine("Compatibilité de l'animal:");
+            IEnumerable<AniCompatibilite> compatibilites = _animalService.ListCompatibilites(animal.Id);
+            foreach (var comp in compatibilites)
+            {
+                Console.WriteLine($"\t- {comp.CompType}:  {comp.Valeur}, Description: {comp.Description}, UpdatedAt: {comp.UpdatedAt}");
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Animalerie.BLL.Services.Interfaces;
+﻿using Animalerie.BLL.CustomExceptions;
+using Animalerie.BLL.Services.Interfaces;
 using Animalerie.DAL.Repositories.Interfaces;
 using Animalerie.Domain.CustomEnums.Database;
 using Animalerie.Domain.Models;
@@ -30,7 +31,12 @@ namespace Animalerie.BLL.Services
 
         public Animal Consulter(string id)
         {
-            throw new NotImplementedException();
+            Animal? animal = _animalRepository.Consulter(id);
+            if (animal == null)
+            {
+                throw new NotFoundException();
+            }
+            return animal;
         }
 
         public IEnumerable<Animal> Lister(AnimalFilters? filters = null, int offset = 0, int limit = 20)
@@ -41,6 +47,11 @@ namespace Animalerie.BLL.Services
         public void ModifierCompatibilite(string aniId, int compId, bool valeur, string? desc = null)
         {
             throw new NotImplementedException();
+        }
+
+        public IEnumerable<AniCompatibilite> ListCompatibilites(string animalId)
+        {
+            return _animalRepository.ListCompatibilites(animalId);
         }
 
         public void Supprimer(string id)

@@ -44,6 +44,9 @@ namespace Animalerie.ConsoleApp.Screens
                         case "2":
                             _ecranAnimal.Lister();
                             break;
+                        case "3":
+                            _ecranAnimal.Consulter();
+                            break;
                         case "0":
                             continuer = false;
                             break;
