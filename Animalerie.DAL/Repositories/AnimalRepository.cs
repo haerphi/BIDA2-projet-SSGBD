@@ -1,6 +1,8 @@
-﻿using Animalerie.DAL.Repositories.Interfaces;
+﻿using Animalerie.DAL.Mappers;
+using Animalerie.DAL.Repositories.Interfaces;
 using Animalerie.Domain.CustomEnums.Database;
 using Animalerie.Domain.Models;
+using Animalerie.Domain.Models.Listing;
 using System.Data.Common;
 using Tools.Database;
 
@@ -15,7 +17,7 @@ namespace Animalerie.DAL.Repositories
             _dbContext = dbContext;
         }
 
-        public void AjouterAnimal(Animal animal, string[] couleurs, Contact contact, RaisonEntree raison, DateTime dateEntree)
+        public void Ajouter(Animal animal, string[] couleurs, Contact contact, RaisonEntree raison, DateTime dateEntree)
         {
             _dbContext.Connection.ExecuteNonQuery("ps_ajouter_animal", true, new
             {
@@ -34,9 +36,50 @@ namespace Animalerie.DAL.Repositories
             });
         }
 
-        public Animal? ConsulterAnimal(string id)
+        public Animal? Consulter(string id)
         {
             throw new NotImplementedException();
+        }
+
+        public IEnumerable<Animal> Lister(AnimalFilters? filters = null, int offset = 0, int limit = 20)
+        {
+            string query = "SELECT * FROM vue_animaux WHERE deleted_at IS NULL";
+
+            if (filters is not null)
+            {
+                if (filters.Nom is not null)
+                {
+                    query += " AND nom LIKE '%' || @p_nom || '%'";
+                }
+
+                if (filters.Type is not null)
+                {
+                    query += " AND type = @p_type";
+                }
+
+                if (filters.Sexe is not null)
+                {
+                    query += " AND sexe = @p_sexe";
+                }
+
+                if (filters.AnimalStatus is not null)
+                {
+                    query += " AND status LIKE @p_statut || '%'";
+                }
+            }
+
+            query += " ORDER BY id LIMIT @p_limit OFFSET @p_offset";
+
+            return _dbContext.Connection.ExecuteReader<Animal>(query, (r) => r.ToAnimal(), false, new
+            {
+                p_nom = filters?.Nom,
+                p_type = filters?.Type,
+                p_sexe = filters?.Sexe,
+                p_statut = filters?.AnimalStatus.ToString(),
+
+                p_limit = limit,
+                p_offset = offset
+            });
         }
 
         public void ModifierCompatibilite(string aniId, int compId, bool valeur, string? desc = null)
@@ -44,7 +87,7 @@ namespace Animalerie.DAL.Repositories
             throw new NotImplementedException();
         }
 
-        public void SupprimerAnimal(string id)
+        public void Supprimer(string id)
         {
             throw new NotImplementedException();
         }

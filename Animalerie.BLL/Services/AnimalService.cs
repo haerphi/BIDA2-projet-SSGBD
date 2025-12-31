@@ -2,6 +2,7 @@
 using Animalerie.DAL.Repositories.Interfaces;
 using Animalerie.Domain.CustomEnums.Database;
 using Animalerie.Domain.Models;
+using Animalerie.Domain.Models.Listing;
 
 namespace Animalerie.BLL.Services
 {
@@ -22,7 +23,7 @@ namespace Animalerie.BLL.Services
             Contact contact = _contactService.Consulter(contactId);
 
             // Ajout de l'animal via le repository
-            _animalRepository.AjouterAnimal(animal, couleurs, contact, raison, dateEntree);
+            _animalRepository.Ajouter(animal, couleurs, contact, raison, dateEntree);
 
             // TODO récupérer l'animal ajouté (ou au moins son ID)
         }
@@ -30,6 +31,11 @@ namespace Animalerie.BLL.Services
         public Animal Consulter(string id)
         {
             throw new NotImplementedException();
+        }
+
+        public IEnumerable<Animal> Lister(AnimalFilters? filters = null, int offset = 0, int limit = 20)
+        {
+            return _animalRepository.Lister(filters, offset, limit);
         }
 
         public void ModifierCompatibilite(string aniId, int compId, bool valeur, string? desc = null)

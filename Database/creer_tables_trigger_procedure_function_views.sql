@@ -7,8 +7,8 @@
 -- TYPES
 
 CREATE TYPE type_animal AS ENUM ('chat', 'chien');
-CREATE TYPE sexe_animal AS ENUM ('M', 'F');
-CREATE TYPE role_nom AS ENUM ('benevole', 'adoptant', 'candidat', 'Famille_accueil');
+CREATE TYPE sexe_animal AS ENUM ('m', 'f');
+CREATE TYPE role_nom AS ENUM ('benevole', 'adoptant', 'candidat', 'famille_accueil');
 CREATE TYPE raison_entree AS ENUM ('abandon', 'errant', 'deces_proprietaire', 'saisie', 'retour_adoption', 'retour_famille_accueil');
 CREATE TYPE raison_sortie AS ENUM ('adoption', 'retour_proprietaire', 'deces_animal', 'famille_accueil');
 CREATE TYPE statut_adoption AS ENUM ('demande', 'acceptee', 'rejet_environnement', 'rejet_comportement');
@@ -58,9 +58,9 @@ CREATE TABLE ANIMAL
     nom                VARCHAR(100) NOT NULL,
     type               type_animal  NOT NULL,
     sexe               sexe_animal  NOT NULL,
-    particularités     TEXT,
+    particularites     TEXT,
     description        TEXT,
-    date_sterilisation DATE,
+    date_sterilisation TIMESTAMPTZ,
     date_naissance     TIMESTAMPTZ  NOT NULL CHECK (date_naissance <= CURRENT_DATE),
     date_deces         TIMESTAMPTZ,
     deleted_at         TIMESTAMPTZ,
@@ -144,14 +144,14 @@ CREATE TABLE PERSONNE_ROLE
 -- ===========================================================================================================================================================
 -- TRIGGER
 
--- Si date_deces IS NOT NULL, l'animal ne peut plus avoir de nouvelles entrées/sorties, vaccination
+-- Si date_deces IS NOT NULL, l'animal ne peut plus avoir de nouvelles entrees/sorties, vaccination
 CREATE OR REPLACE FUNCTION fn_check_animal_status()
     RETURNS TRIGGER AS
 $$
 BEGIN
-    -- Empêcher toute modification/insertion si l'animal est décédé (sauf pour la date de décès elle-même)
+    -- Empêcher toute modification/insertion si l'animal est decede (sauf pour la date de decès elle-même)
     IF EXISTS (SELECT 1 FROM ANIMAL WHERE id = NEW.ani_id AND date_deces IS NOT NULL) THEN
-        RAISE EXCEPTION 'Action impossible : l''animal est marqué comme décédé.';
+        RAISE EXCEPTION 'Action impossible : l''animal est marque comme decede.';
     END IF;
     RETURN NEW;
 END;
@@ -174,7 +174,7 @@ CREATE TRIGGER trg_check_post_mortem_vaccin
     FOR EACH ROW
 EXECUTE FUNCTION fn_check_animal_status();
 
--- Un animal ne peut pas avoir plusieurs accueils actifs simultanément (un seul ACCUEIL avec date_fin = NULL à la fois)
+-- Un animal ne peut pas avoir plusieurs accueils actifs simultanement (un seul ACCUEIL avec date_fin = NULL à la fois)
 CREATE OR REPLACE FUNCTION fn_check_accueil_actif()
     RETURNS TRIGGER AS
 $$
@@ -183,7 +183,7 @@ BEGIN
                FROM FAMILLE_ACCUEIL
                WHERE ani_id = NEW.ani_id
                  AND date_fin IS NULL) THEN
-        RAISE EXCEPTION 'Cet animal est déjà dans une famille d''accueil active.';
+        RAISE EXCEPTION 'Cet animal est dejà dans une famille d''accueil active.';
     END IF;
     RETURN NEW;
 END;
@@ -195,46 +195,6 @@ CREATE TRIGGER trg_famille_accueil_unique
     ON FAMILLE_ACCUEIL
     FOR EACH ROW
 EXECUTE FUNCTION fn_check_accueil_actif();
-
-CREATE OR REPLACE FUNCTION fn_validate_entree_mouvement()
-    RETURNS TRIGGER AS
-$$
-DECLARE
-    derniere_raison_sortie raison_sortie;
-BEGIN
-    -- Vérifier si le retour adoption est légitime
-    IF NEW.raison = 'retour_adoption' THEN
-        SELECT raison
-        INTO derniere_raison_sortie
-        FROM ANI_SORTIE
-        WHERE ani_id = NEW.ani_id
-        ORDER BY date DESC
-        LIMIT 1;
-
-        IF derniere_raison_sortie IS NULL OR derniere_raison_sortie != 'adoption' THEN
-            RAISE EXCEPTION 'Un retour d''adoption nécessite une sortie préalable avec la raison adoption.';
-        END IF;
-    END IF;
-
-    -- Vérifier qu'il n'y a pas d'entrée sans sortie préalable (sauf la toute première)
-    IF EXISTS (SELECT 1
-               FROM ANI_ENTREE E
-                        LEFT JOIN ANI_SORTIE S ON E.ani_id = S.ani_id AND S.date > E.date
-               WHERE E.ani_id = NEW.ani_id
-                 AND S.id IS NULL) THEN
-        RAISE EXCEPTION 'L''animal est déjà enregistré au refuge. Une sortie est nécessaire avant une nouvelle entrée.';
-    END IF;
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Application du trigger
-CREATE TRIGGER trg_validate_entree
-    BEFORE INSERT
-    ON ANI_ENTREE
-    FOR EACH ROW
-EXECUTE FUNCTION fn_validate_entree_mouvement();
 
 -- Trigger pour la sortie par adoption
 CREATE OR REPLACE FUNCTION fn_check_sortie_adoption()
@@ -288,11 +248,11 @@ CREATE OR REPLACE FUNCTION fn_check_vaccin_date_naissance()
     RETURNS TRIGGER AS
 $$
 DECLARE
-    date_naissance DATE;
+    date_naissance TIMESTAMPTZ;
 BEGIN
     SELECT a.date_naissance INTO date_naissance FROM ANIMAL a WHERE a.id = NEW.ani_id;
     IF NEW.date < date_naissance THEN
-        RAISE EXCEPTION 'La date de vaccination ne peut pas être antérieure à la date de naissance de l''animal.';
+        RAISE EXCEPTION 'La date de vaccination ne peut pas être anterieure à la date de naissance de l''animal.';
     END IF;
     RETURN NEW;
 END;
@@ -347,7 +307,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- Modifier les coordonnées de la personne de contact
+-- Modifier les coordonnees de la personne de contact
 CREATE OR REPLACE PROCEDURE ps_modifier_contact(
     p_contact_id INT,
     p_nom VARCHAR,
@@ -414,19 +374,19 @@ CREATE OR REPLACE PROCEDURE ps_ajouter_animal(
     p_nom VARCHAR,
     p_type type_animal,
     p_sexe sexe_animal,
-    p_date_naissance DATE,
+    p_date_naissance TIMESTAMPTZ,
     p_couleurs VARCHAR[],
     p_particularites TEXT DEFAULT NULL,
     p_description TEXT DEFAULT NULL,
-    p_date_sterilisation DATE DEFAULT NULL,
+    p_date_sterilisation TIMESTAMPTZ DEFAULT NULL,
     p_raison raison_entree DEFAULT 'abandon',
-    p_entree_date DATE DEFAULT CURRENT_DATE
+    p_entree_date TIMESTAMPTZ DEFAULT CURRENT_DATE
 ) AS
 $$
 DECLARE
     couleur VARCHAR;
 BEGIN
-    INSERT INTO ANIMAL (id, nom, type, sexe, date_naissance, particularités, description, date_sterilisation)
+    INSERT INTO ANIMAL (id, nom, type, sexe, date_naissance, particularites, description, date_sterilisation)
     VALUES (p_id, p_nom, p_type, p_sexe, p_date_naissance, p_particularites, p_description, p_date_sterilisation);
 
     INSERT INTO ANI_ENTREE (contact_id, raison, date, ani_id)
@@ -460,7 +420,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Ajouter/Modifier une compatibilité sur un animal
+-- Ajouter/Modifier une compatibilite sur un animal
 CREATE OR REPLACE PROCEDURE ps_modifier_compatibilite_animal(
     p_ani_id CHAR(11),
     p_comp_id INT,
@@ -469,39 +429,39 @@ CREATE OR REPLACE PROCEDURE ps_modifier_compatibilite_animal(
 ) AS
 $$
 BEGIN
-    -- Si la compatibilité existe déjà
+    -- Si la compatibilite existe dejà
     IF EXISTS (SELECT 1
                FROM ANI_COMPATIBILITE
                WHERE ani_id = p_ani_id
                  AND comp_id = p_comp_id) THEN
-        -- Mettre à jour la compatibilité existante
+        -- Mettre à jour la compatibilite existante
         UPDATE ANI_COMPATIBILITE
         SET valeur      = p_valeur,
             description = p_description
         WHERE ani_id = p_ani_id
           AND comp_id = p_comp_id;
     ELSE
-        -- Insérer une nouvelle compatibilité
+        -- Inserer une nouvelle compatibilite
         INSERT INTO ANI_COMPATIBILITE (ani_id, comp_id, valeur, description)
         VALUES (p_ani_id, p_comp_id, p_valeur, p_description);
     END IF;
 END;
 $$ LANGUAGE plpgsql;
 
--- Ajouter une nouvelle famille d’accueil à un animal (la date d’arrivée et la personne de contact sont obligatoires)
+-- Ajouter une nouvelle famille d’accueil à un animal (la date d’arrivee et la personne de contact sont obligatoires)
 CREATE OR REPLACE PROCEDURE ps_ajouter_famille_accueil_animal(
     p_ani_id CHAR(11),
     p_famille_accueil_id INT,
-    p_date_fin DATE DEFAULT NULL
+    p_date_fin TIMESTAMPTZ DEFAULT NULL
 ) AS
 $$
 BEGIN
-    -- check si l'animal n'est pas déjà en famille d'accueil
+    -- check si l'animal n'est pas dejà en famille d'accueil
     IF EXISTS (SELECT 1
                FROM FAMILLE_ACCUEIL
                WHERE ani_id = p_ani_id
                  AND (date_fin IS NULL OR date_fin >= CURRENT_DATE)) THEN
-        RAISE EXCEPTION 'Cet animal est déjà dans une famille d''accueil.';
+        RAISE EXCEPTION 'Cet animal est dejà dans une famille d''accueil.';
     END IF;
 
     INSERT INTO FAMILLE_ACCUEIL (ani_id, famille_accueil_id, date_debut, date_fin)
@@ -511,7 +471,7 @@ BEGIN
     INSERT INTO ANI_SORTIE (ani_id, contact_id, raison, date)
     VALUES (p_ani_id, p_famille_accueil_id, 'famille_accueil', CURRENT_DATE);
 
-    -- si date_fin est fournie, encoder la rentrée de l'animal
+    -- si date_fin est fournie, encoder la rentree de l'animal
     IF p_date_fin IS NOT NULL THEN
         INSERT INTO ANI_ENTREE (ani_id, contact_id, raison, date)
         VALUES (p_ani_id, p_famille_accueil_id, 'retour_famille_accueil', p_date_fin);
@@ -519,15 +479,35 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Lister les familles d’accueil par où l’animal est passé
+CREATE OR REPLACE PROCEDURE ps_modifier_date_fin_famille_accueil(
+    p_ani_id CHAR(11),
+    p_date_fin TIMESTAMPTZ DEFAULT CURRENT_DATE
+) AS
+$$
+BEGIN
+    UPDATE FAMILLE_ACCUEIL
+    SET date_fin = p_date_fin
+    WHERE ani_id = p_ani_id
+      AND date_fin IS NULL;
+
+    -- rentree de l'animal
+    INSERT INTO ANI_ENTREE (ani_id, contact_id, raison, date)
+    VALUES (p_ani_id, (SELECT famille_accueil_id
+                       FROM FAMILLE_ACCUEIL
+                       WHERE ani_id = p_ani_id
+                         AND date_fin = p_date_fin), 'retour_famille_accueil', p_date_fin);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Lister les familles d’accueil par où l’animal est passe
 CREATE OR REPLACE FUNCTION fn_lister_familles_accueil_animal(
     p_ani_id CHAR(11)
 )
     RETURNS TABLE
             (
                 id_accueil     INT,
-                date_debut     DATE,
-                date_fin       DATE,
+                date_debut     TIMESTAMPTZ,
+                date_fin       TIMESTAMPTZ,
                 nom_contact    VARCHAR,
                 prenom_contact VARCHAR,
                 gsm_contact    VARCHAR,
@@ -560,8 +540,8 @@ CREATE OR REPLACE FUNCTION fn_lister_animaux_famille_accueil(
                 ani_id      CHAR(11),
                 nom_animal  VARCHAR,
                 type_animal type_animal,
-                date_debut  DATE,
-                date_fin    DATE
+                date_debut  TIMESTAMPTZ,
+                date_fin    TIMESTAMPTZ
             )
 AS
 $$
@@ -586,15 +566,15 @@ CREATE OR REPLACE PROCEDURE ps_ajouter_adoption(
 ) AS
 $$
 BEGIN
-    -- check si l'animal est décédé
+    -- check si l'animal est decede
     IF EXISTS (SELECT 1
                FROM ANIMAL
                WHERE id = p_ani_id
                  AND date_deces IS NOT NULL) THEN
-        RAISE EXCEPTION 'Impossible de créer une adoption pour un animal décédé.';
+        RAISE EXCEPTION 'Impossible de creer une adoption pour un animal decede.';
     END IF;
 
-    -- check (s'il n'y a pas de sortie) OU (si il n'y a pas d'entrée après la dernière sortie et que la dernière sortie est une adoption)
+    -- check (s'il n'y a pas de sortie) OU (si il n'y a pas d'entree après la dernière sortie et que la dernière sortie est une adoption)
     IF EXISTS (SELECT 1
                FROM ANIMAL a
                WHERE a.id = p_ani_id
@@ -612,7 +592,7 @@ BEGIN
                    ))
     THEN
 
-        RAISE EXCEPTION 'Impossible de créer une adoption : l''animal n''est pas actuellement disponible pour adoption.';
+        RAISE EXCEPTION 'Impossible de creer une adoption : l''animal n''est pas actuellement disponible pour adoption.';
     ELSE
         INSERT INTO ADOPTION (ani_id, adoptant_id, statut, date_demande)
         VALUES (p_ani_id, p_adoptant_id, 'demande', CURRENT_DATE);
@@ -631,7 +611,7 @@ BEGIN
     SET statut = p_nouveau_statut
     WHERE id = p_adoption_id;
 
-    -- Si l'adoption est acceptée, enregistrer la sortie de l'animal
+    -- Si l'adoption est acceptee, enregistrer la sortie de l'animal
     IF p_nouveau_statut = 'acceptee' THEN
         INSERT INTO ANI_SORTIE (ani_id, contact_id, raison, date)
         SELECT ani_id, adoptant_id, 'adoption', CURRENT_DATE
@@ -645,16 +625,16 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE PROCEDURE ps_ajouter_vaccination_animal(
     p_ani_id CHAR(11),
     p_vac_id int,
-    p_date DATE
+    p_date TIMESTAMPTZ
 ) AS
 $$
 BEGIN
-    -- check si l'animal est décédé
+    -- check si l'animal est decede
     IF EXISTS (SELECT 1
                FROM ANIMAL
                WHERE id = p_ani_id
                  AND date_deces IS NOT NULL) THEN
-        RAISE EXCEPTION 'Impossible d''ajouter une vaccination pour un animal décédé.';
+        RAISE EXCEPTION 'Impossible d''ajouter une vaccination pour un animal decede.';
     END IF;
 
 
@@ -677,27 +657,44 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Fonction animal status
+CREATE OR REPLACE FUNCTION fn_animal_status(
+    p_ani_id CHAR(11)
+) RETURNS VARCHAR AS
+$$
+DECLARE
+    v_statut VARCHAR;
+BEGIN
+    SELECT CASE
+               WHEN a.date_deces IS NOT NULL
+                   THEN 'decede' || '|' || TO_CHAR(a.date_deces, 'DD/MM/YYYY')
+
+               WHEN NOT EXISTS (SELECT 1
+                                FROM ANI_SORTIE s
+                                WHERE s.ani_id = a.id
+                                  AND s.date >= (SELECT MAX(e.date) FROM ANI_ENTREE e WHERE e.ani_id = a.id))
+                   THEN 'present'
+
+               ELSE (SELECT s.raison || '|' || TO_CHAR(s.date, 'DD/MM/YYYY')
+                     FROM ANI_SORTIE s
+                     WHERE s.ani_id = a.id
+                     ORDER BY s.date DESC
+                     LIMIT 1)
+               END
+    INTO v_statut
+    FROM ANIMAL a
+    WHERE a.id = p_ani_id;
+
+    RETURN v_statut; -- On retourne la variable
+END;
+$$ LANGUAGE plpgsql;
 
 -- ===========================================================================================================================================================
 -- VIEWS
 
--- Lister les animaux présents au refuge
-
-CREATE OR REPLACE VIEW vue_animaux_present_refuge AS
-SELECT id,
-       nom,
-       type,
-       sexe,
-       "particularités",
-       description,
-       date_sterilisation,
-       date_naissance
+-- Lister les animaux et leur statut (present ou leur dernière sortie)
+CREATE OR REPLACE VIEW vue_animaux AS
+SELECT a.*,
+       fn_animal_status(a.id) AS Status
 FROM ANIMAL a
-WHERE a.deleted_at IS NULL
-  AND NOT EXISTS (SELECT 1
-                  FROM ANI_SORTIE s
-                  WHERE s.ani_id = a.id
-                    AND s.date >= (SELECT MAX(e.date)
-                                   FROM ANI_ENTREE e
-                                   WHERE e.ani_id = a.id))
-  AND a.date_deces IS NULL;
+WHERE a.deleted_at IS NULL;

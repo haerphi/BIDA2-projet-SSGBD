@@ -21,13 +21,14 @@ namespace Animalerie.ConsoleApp.Screens
                 Console.Clear();
                 Console.WriteLine("=== GESTION DU REFUGE ANIMAUX ===");
                 Console.WriteLine("1.  Ajouter un animal");
-                Console.WriteLine("2.  Consulter un animal (Détails)");
-                Console.WriteLine("3.  Supprimer un animal (Archive)");
-                Console.WriteLine("4.  Gérer les informations (Compatibilité, Vaccins)");
-                Console.WriteLine("5.  Lister les animaux présents au refuge");
-                Console.WriteLine("6.  Gestion des Contacts (Ajout/Modif/Consulter)");
-                Console.WriteLine("7.  Gestion des Familles d'accueil (Passage/Attribution)");
-                Console.WriteLine("8.  Gestion des Adoptions (Demande/Statut)");
+                Console.WriteLine("2.  Lister les animaux");
+                Console.WriteLine("3.  Consulter un animal (Détails)");
+                Console.WriteLine("4.  Supprimer un animal (Archive)");
+                Console.WriteLine("5.  Gérer les informations (Compatibilité, Vaccins)");
+                Console.WriteLine("6.  Lister les animaux présents au refuge");
+                Console.WriteLine("7.  Gestion des Contacts (Ajout/Modif/Consulter)");
+                Console.WriteLine("8.  Gestion des Familles d'accueil (Passage/Attribution)");
+                Console.WriteLine("9.  Gestion des Adoptions (Demande/Statut)");
                 Console.WriteLine("0.  Quitter");
                 Console.Write("\nVotre choix : ");
 
@@ -38,29 +39,11 @@ namespace Animalerie.ConsoleApp.Screens
                     switch (choix)
                     {
                         case "1":
-                            _ecranAnimal.AjouterAnimal();
+                            _ecranAnimal.Ajouter();
                             break;
-                        //case "2":
-                        //    MenuConsulterAnimal(service);
-                        //    break;
-                        //case "3":
-                        //    MenuSupprimerAnimal(service);
-                        //    break;
-                        //case "4":
-                        //    MenuInfosAnimal(service);
-                        //    break;
-                        //case "5":
-                        //    ListerAnimaux(service);
-                        //    break;
-                        //case "6":
-                        //    MenuContacts(service);
-                        //    break;
-                        //case "7":
-                        //    MenuFamillesAccueil(service);
-                        //    break;
-                        //case "8":
-                        //    MenuAdoptions(service);
-                        //    break;
+                        case "2":
+                            _ecranAnimal.Lister();
+                            break;
                         case "0":
                             continuer = false;
                             break;

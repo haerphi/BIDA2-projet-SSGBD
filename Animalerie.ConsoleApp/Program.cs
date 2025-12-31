@@ -4,7 +4,11 @@ using Animalerie.ConsoleApp.Ecrans;
 using Animalerie.ConsoleApp.Screens;
 using Animalerie.DAL.Repositories;
 using Animalerie.DAL.Repositories.Interfaces;
+using Animalerie.Domain.CustomEnums.Database;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
+using System.Data;
+using System.Data.Common;
 using Tools.Database;
 
 string connectionString = @"Host=localhost;Username=devuser;Password=devpassword;Database=refugeanimaux";
@@ -40,4 +44,5 @@ var dbContext = serviceProvider.GetRequiredService<AnimalerieDBContext>();
 var menu = serviceProvider.GetRequiredService<EcranPrincipal>();
 
 dbContext.Connection.EnsureValidConnection();
+
 menu.Display();

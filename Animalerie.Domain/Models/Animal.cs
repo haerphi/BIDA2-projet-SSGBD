@@ -15,7 +15,9 @@ namespace Animalerie.Domain.Models
         public DateTime? DateDeces { get; set; }
         public DateTime? DeletedAt { get; set; }
         public string[] Couleurs { get; set; }
-        
+
+        public string? Status { get; set; } // Non mappé en base de données
+
         public Animal(string id, string nom, TypeAnimal type, SexeAnimal sexe, string particularites, string description, DateTime? dateSterilisation, DateTime dateNaissance, string[] couleurs, DateTime? dateDeces = null, DateTime? deletedAt = null)
         {
             Id = id;
@@ -26,9 +28,14 @@ namespace Animalerie.Domain.Models
             Description = description;
             DateSterilisation = dateSterilisation;
             DateNaissance = dateNaissance;
+            Couleurs = couleurs;
             DateDeces = dateDeces;
             DeletedAt = deletedAt;
-            Couleurs = couleurs;
+        }
+
+        public string ToStringTableau()
+        {
+            return $"| {Id,-11} | {Nom,-12} | {Type,-10} | {Sexe,-5} | {DateNaissance.ToShortDateString(),-13} | {Status ?? "N/A"}";
         }
     }
 }

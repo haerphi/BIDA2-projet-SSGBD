@@ -1,7 +1,9 @@
 ﻿using Animalerie.BLL.Services.Interfaces;
 using Animalerie.ConsoleApp.Ecrans.Utils;
 using Animalerie.Domain.CustomEnums.Database;
+using Animalerie.Domain.CustomEnums.ListingFilters;
 using Animalerie.Domain.Models;
+using Animalerie.Domain.Models.Listing;
 using Animalerie.Domain.Patterns;
 using Tools.ConsoleApp.Input;
 
@@ -18,33 +20,33 @@ namespace Animalerie.ConsoleApp.Ecrans
             _contactService = contactService;
         }
 
-        public void AjouterAnimal()
+        public void Ajouter()
         {
             Console.Clear();
             Console.WriteLine("Ajout d'un animal:");
 
-            Animal animal2 = new Animal(
-                id:  "29122500000",
-                nom: "White",
-                type: TypeAnimal.Chien,
-                sexe: SexeAnimal.M,
-                particularites: "",
-                description: "",
-                dateSterilisation: null,
-                dateNaissance: DateTime.Now,
-                couleurs: ["Crème", "Blanc"],
-                dateDeces: null
-                );
-            _animalService.Ajouter(
-                animal2,
-                couleurs: ["Crème", "Blanc"],
-                contactId: 1,
-                raison: RaisonEntree.Errant,
-                dateEntree: DateTime.Now
-            );
+            //Animal animal2 = new Animal(
+            //    id:  "29122500000",
+            //    nom: "White",
+            //    type: TypeAnimal.Chien,
+            //    sexe: SexeAnimal.M,
+            //    particularites: "",
+            //    description: "",
+            //    dateSterilisation: null,
+            //    dateNaissance: DateTime.Now.AddDays(-2),
+            //    couleurs: ["Crème", "Blanc"],
+            //    dateDeces: null
+            //    );
+            //_animalService.Ajouter(
+            //    animal2,
+            //    couleurs: ["Crème", "Blanc"],
+            //    contactId: 1,
+            //    raison: RaisonEntree.Errant,
+            //    dateEntree: DateTime.Now
+            //);
 
 
-            return;
+            //return;
 
             // ID
             string defaultId = DateTime.Now.ToString("yyMMdd") + "00000"; // TODO (si temps) récupérer l dernière ID
@@ -258,7 +260,7 @@ namespace Animalerie.ConsoleApp.Ecrans
                 $"- Nom: {inputName}\n" +
                 $"- Type: {inputType}\n" +
                 $"- Sexe: {inputSexe}\n" +
-                $"- Date de naissance: {inputBirthDate?.ToString("dd/MM/yyyy")}\n",
+                $"- Date de naissance: {inputBirthDate?.ToString("dd/MM/yyyy")}\n" +
                 $"- Couleurs: {string.Join(", ", inputCouleurs)}\n" +
                 $"- Particularités: {inputParticularites}\n" +
                 $"- Description: {inputDescription}\n" +
@@ -298,6 +300,85 @@ namespace Animalerie.ConsoleApp.Ecrans
                 raison: inputRaison.Value,
                 dateEntree: inputDateEntree.Value
             );
+        }
+
+        public void Lister()
+        {
+            Console.Clear();
+            bool displayListAgain = false;
+            AnimalFilters filters = new AnimalFilters();
+            do
+            {
+                IEnumerable<Animal> animaux = _animalService.Lister(filters);
+
+                Console.WriteLine("Liste des animeaux");
+                string header = $"| {"Id",-11} | {"Nom",-12} | {"Type",-10} | {"Sexe",-5} | {"Naissance",-13} | Status";
+                Console.WriteLine(new string('-', header.Length)); // Ligne de séparation
+                Console.WriteLine(header);
+                Console.WriteLine(new string('-', header.Length));
+                foreach (var animal in animaux)
+                {
+                    Console.WriteLine(animal.ToStringTableau());
+                }
+
+                Inputs.ReadConfirmation(
+                    prompt: "Voulez-vous filter la liste d'animaux ? (O/n) : \n>",
+                    userInput: out displayListAgain,
+                    defaultValue: true
+                );
+
+                if (displayListAgain)
+                {
+                    // Nom
+                    Inputs.ReadString(
+                        prompt: "Filtrer par nom (ou laisser vide pour ne pas filtrer) : \n>",
+                        validators: [],
+                        userInput: out string? inputName,
+                        defaultValue: string.Empty,
+                        exitCondition: InputExitCondition.IsEmptyInput,
+                        displayError: Inputs.DisplayErrors
+                    );
+                    filters.Nom = inputName;
+
+                    // Type
+                    Display.EnumOptions<TypeAnimal>();
+                    Inputs.ReadEnum<TypeAnimal>(
+                        prompt: "Filtrer par type d'animal (ou laisser vide pour ne pas filtrer) : \n>",
+                        validators: [],
+                        userInput: out TypeAnimal? inputType,
+                        defaultValue: null,
+                        exitCondition: InputExitCondition.IsEmptyInput,
+                        displayError: Inputs.DisplayErrors
+                    );
+                    filters.Type = inputType;
+
+                    // Sexe
+                    Display.EnumOptions<SexeAnimal>();
+                    Inputs.ReadEnum<SexeAnimal>(
+                        prompt: "Filtrer par sexe d'animal (ou laisser vide pour ne pas filtrer) : \n>",
+                        validators: [],
+                        userInput: out SexeAnimal? inputSexe,
+                        defaultValue: null,
+                        exitCondition: InputExitCondition.IsEmptyInput,
+                        displayError: Inputs.DisplayErrors
+                    );
+                    filters.Sexe = inputSexe;
+
+                    // Status
+                    Console.WriteLine("Statuts disponibles:");
+                    Display.EnumOptions<AnimalStatus>();
+                    Inputs.ReadEnum<AnimalStatus>(
+                        prompt: "Filtrer par statut d'animal (ou laisser vide pour ne pas filtrer) : \n>",
+                        validators: [],
+                        userInput: out AnimalStatus? inputStatus,
+                        defaultValue: null,
+                        exitCondition: InputExitCondition.IsEmptyInput,
+                        displayError: Inputs.DisplayErrors
+                    );
+                    filters.AnimalStatus = inputStatus;
+                }
+
+            } while (displayListAgain);
         }
     }
 }

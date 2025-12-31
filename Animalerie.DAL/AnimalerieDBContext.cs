@@ -1,5 +1,6 @@
 ﻿using Animalerie.Domain.CustomEnums.Database;
 using Npgsql;
+using Npgsql.NameTranslation;
 using System.Data.Common;
 
 public class AnimalerieDBContext : IDisposable
@@ -12,12 +13,14 @@ public class AnimalerieDBContext : IDisposable
         // Création d'un builder pour mapper les types PostgreSQL vers les Enums C#
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(connString);
 
-        dataSourceBuilder.MapEnum<RaisonEntree>("raison_entree");
-        dataSourceBuilder.MapEnum<RaisonSortie>("raison_sortie");
-        dataSourceBuilder.MapEnum<RoleNom>("role_nom");
-        dataSourceBuilder.MapEnum<SexeAnimal>("sexe_animal");
-        dataSourceBuilder.MapEnum<StatutAdoption>("statut_adoption");
-        dataSourceBuilder.MapEnum<TypeAnimal>("type_animal");
+        INpgsqlNameTranslator translator = new NpgsqlSnakeCaseNameTranslator();
+
+        dataSourceBuilder.MapEnum<RaisonEntree>("raison_entree", translator);
+        dataSourceBuilder.MapEnum<RaisonSortie>("raison_sortie", translator);
+        dataSourceBuilder.MapEnum<RoleNom>("role_nom", translator);
+        dataSourceBuilder.MapEnum<SexeAnimal>("sexe_animal", translator);
+        dataSourceBuilder.MapEnum<StatutAdoption>("statut_adoption", translator);
+        dataSourceBuilder.MapEnum<TypeAnimal>("type_animal", translator);
 
         _dataSource = dataSourceBuilder.Build();
         Connection = _dataSource.CreateConnection();

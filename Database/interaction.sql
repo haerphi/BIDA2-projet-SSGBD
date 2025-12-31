@@ -64,16 +64,19 @@ CALL ps_ajouter_animal(
         '25122200000', -- p_id (yymmddxxxxx)
         'Rex', -- p_nom
         'chien', -- p_type (de type type_animal)
-        'M', -- p_sexe (de type sexe_animal)
+        'm', -- p_sexe (de type sexe_animal)
         '2023-05-15', -- p_date_naissance
         ARRAY ['Noir', 'Blanc'] -- p_couleurs (tableau de VARCHAR)
-    /* Autres paramètres si nécessaires:
-       - p_particularites TEXT DEFAULT NULL,
-       - p_description TEXT DEFAULT NULL,
-       - p_date_sterilisation DATE DEFAULT NULL,
-       - p_raison raison_entree DEFAULT 'abandon',
-       - p_entree_date DATE DEFAULT CURRENT_DATE
-    */
+     );
+
+CALL ps_ajouter_animal(
+        1, -- p_contact_id
+        '25122200001', -- p_id (yymmddxxxxx)
+        'Cerber', -- p_nom
+        'chien', -- p_type (de type type_animal)
+        'm', -- p_sexe (de type sexe_animal)
+        '2023-05-15', -- p_date_naissance
+        ARRAY ['Noir', 'Rouge'] -- p_couleurs (tableau de VARCHAR)
      );
 
 -- TODO Consulter un animal (`select`)
@@ -108,9 +111,16 @@ FROM ani_compatibilite ac
          JOIN compatibilite c ON ac.comp_id = c.id
 WHERE ac.ani_id = '25122200000';
 
+-- Lister tout les animaux
+SELECT *
+FROM vue_animaux;
+
 -- Lister les animaux présents au refuge
 SELECT *
-FROM vue_animaux_present_refuge;
+FROM vue_animaux
+    WHERE status = 'present';
+
+
 
 -- Ajouter une nouvelle famille d’accueil à un animal (la date d’arrivée et la personne de contact sont obligatoires)
 CALL ps_ajouter_famille_accueil_animal(
@@ -118,6 +128,10 @@ CALL ps_ajouter_famille_accueil_animal(
         1 -- p_contact_id
      );
 
+CALL ps_modifier_date_fin_famille_accueil(
+        '25122200000', -- p_ani_id
+        current_timestamp -- p_date_fin
+     );
 
 -- Lister les familles d’accueil par où l’animal est passé
 SELECT *
@@ -147,7 +161,7 @@ SELECT * FROM ani_sortie;
 CALL ps_ajouter_vaccination_animal(
         '25122200000', -- p_ani_id
         1, -- p_vaccin_id
-        current_date -- p_date_vaccin
+        current_timestamp -- p_date_vaccin
      );
 
 CALL ps_ajouter_vaccination_animal(
