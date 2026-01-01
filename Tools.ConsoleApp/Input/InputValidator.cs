@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Numerics;
+using System.Text.RegularExpressions;
 
 namespace Tools.ConsoleApp.Input
 {
@@ -57,29 +58,49 @@ namespace Tools.ConsoleApp.Input
             };
         }
 
-        public static Func<T, string?> Range<T>(T min, T max) where T : IComparable<T>
+        public static Func<int?, string?> Range(int min, int max)
         {
             return (val) =>
             {
-                return (val.CompareTo(min) < 0 || val.CompareTo(max) > 0) ? $"range_out.{min}-{max}" : null;
+                return (val == null || val < min || val > max) ? $"out_of_range.{min}.{max}" : null;
             };
         }
 
-        public static Func<T, string?> GreaterThan<T>(T threshold, bool orEqual = false) where T : IComparable<T>
+       public static Func<int?, string?> GreaterThan(int threshold, bool equals = false)
         {
             return (val) =>
             {
-                bool isLower = orEqual ? val.CompareTo(threshold) < 0 : val.CompareTo(threshold) <= 0;
-                return isLower ? $"must_be_greater_than.{threshold}" : null;
+                if (val == null)
+                {
+                    return "null";
+                }
+                if (equals)
+                {
+                    return (val < threshold) ? $"not_greater_than_or_equal.{threshold}" : null;
+                }
+                else
+                {
+                    return (val <= threshold) ? $"not_greater_than.{threshold}" : null;
+                }
             };
         }
 
-        public static Func<T, string?> LessThan<T>(T threshold, bool orEqual = false) where T : IComparable<T>
+        public static Func<int?, string?> LowerThan(int threshold, bool equals = false)
         {
             return (val) =>
             {
-                bool isHigher = orEqual ? val.CompareTo(threshold) > 0 : val.CompareTo(threshold) >= 0;
-                return isHigher ? $"must_be_less_than.{threshold}" : null;
+                if (val == null)
+                {
+                    return "null";
+                }
+                if (equals)
+                {
+                    return (val > threshold) ? $"not_lower_than_or_equal.{threshold}" : null;
+                }
+                else
+                {
+                    return (val >= threshold) ? $"not_lower_than.{threshold}" : null;
+                }
             };
         }
         #endregion

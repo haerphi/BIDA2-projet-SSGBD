@@ -130,7 +130,7 @@ CREATE TABLE ANI_COMPATIBILITE
     description TEXT,
     comp_id     INT REFERENCES COMPATIBILITE (id) NOT NULL,
     ani_id      CHAR(11) REFERENCES ANIMAL (id)   NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT current_timestamp,
+    updated_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (comp_id, ani_id)
 );
 
@@ -148,12 +148,12 @@ CREATE TABLE PERSONNE_ROLE
 -- met à jour updated_at ANI_COMPATIBILITE
 CREATE OR REPLACE FUNCTION fn_update_at_ANI_COMPATIBILITE()
     RETURNS TRIGGER AS
-    $$
-    BEGIN
-        NEW.updated_at = CURRENT_TIMESTAMP;
-        RETURN NEW;
-    END
-    $$ LANGUAGE plpgsql;
+$$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END
+$$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_update_at_ANI_COMPATIBILITE
     BEFORE UPDATE
     ON ANI_COMPATIBILITE
@@ -465,8 +465,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Ajouter une nouvelle famille d’accueil à un animal (la date d’arrivee et la personne de contact sont obligatoires)
-CREATE OR REPLACE PROCEDURE ps_ajouter_famille_accueil_animal(
+-- Mettre animal en famille d'accueil
+CREATE OR REPLACE PROCEDURE ps_mettre_animal_en_famille_accueil(
     p_ani_id CHAR(11),
     p_famille_accueil_id INT,
     p_date_fin TIMESTAMPTZ DEFAULT NULL
@@ -497,22 +497,64 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE PROCEDURE ps_modifier_date_fin_famille_accueil(
-    p_ani_id CHAR(11),
+    p_accueil_id int,
     p_date_fin TIMESTAMPTZ DEFAULT CURRENT_DATE
 ) AS
 $$
+DECLARE
+    v_ani_id   CHAR(11);
+    v_date_debut TIMESTAMPTZ;
+    v_date_fin TIMESTAMPTZ;
 BEGIN
+    -- vérifier que l'accueil existe
+    IF NOT EXISTS (SELECT 1
+                   FROM FAMILLE_ACCUEIL
+                   WHERE id = p_accueil_id) THEN
+        RAISE EXCEPTION 'L''accueil avec l''ID % n''existe pas.', p_accueil_id;
+    END IF;
+
+    -- Récupérer l'ani_id et la date de fin actuelle
+    SELECT ani_id, date_fin, date_debut
+    INTO v_ani_id, v_date_fin, v_date_debut
+    FROM FAMILLE_ACCUEIL
+    WHERE id = p_accueil_id;
+
+    -- vérifier que la nouvelle date de fin est postérieure à la date de début
+    IF p_date_fin IS NOT NULL AND p_date_fin < v_date_debut THEN
+        RAISE EXCEPTION 'La date de fin ne peut pas être antérieure à la date de début de l''accueil.';
+    END IF;
+
+    -- Mettre à jour la date de fin dans l'accueil
     UPDATE FAMILLE_ACCUEIL
     SET date_fin = p_date_fin
-    WHERE ani_id = p_ani_id
-      AND date_fin IS NULL;
+    WHERE id = p_accueil_id;
 
-    -- rentree de l'animal
-    INSERT INTO ANI_ENTREE (ani_id, contact_id, raison, date)
-    VALUES (p_ani_id, (SELECT famille_accueil_id
-                       FROM FAMILLE_ACCUEIL
-                       WHERE ani_id = p_ani_id
-                         AND date_fin = p_date_fin), 'retour_famille_accueil', p_date_fin);
+    -- si la date de fin était NULL et qu'on fournit une date de fin, enregistrer la rentrée de l'animal
+    IF v_date_fin IS NULL AND p_date_fin IS NOT NULL THEN
+        -- Enregistrer la rentrée de l'animal
+        INSERT INTO ANI_ENTREE (ani_id, contact_id, raison, date)
+        VALUES (v_ani_id, (SELECT famille_accueil_id FROM FAMILLE_ACCUEIL WHERE id = p_accueil_id),
+                'retour_famille_accueil', p_date_fin);
+    END IF;
+
+    -- si la date de fin était déjà définie
+    IF v_date_fin IS NOT NULL THEN
+        -- Supprimer l'entrée existante
+        DELETE
+        FROM ANI_ENTREE
+        WHERE ani_id = v_ani_id
+          AND contact_id = (SELECT famille_accueil_id FROM FAMILLE_ACCUEIL WHERE id = p_accueil_id)
+          AND raison = 'retour_famille_accueil'
+          AND date = v_date_fin;
+
+        -- si la date de fin est donnée, recrée l'entrée
+        IF p_date_fin IS NOT NULL THEN
+            -- Insérer la nouvelle entrée avec la date mise à jour
+            INSERT INTO ANI_ENTREE (ani_id, contact_id, raison, date)
+            VALUES (v_ani_id, (SELECT famille_accueil_id FROM FAMILLE_ACCUEIL WHERE id = p_accueil_id),
+                    'retour_famille_accueil', p_date_fin);
+        END IF;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -522,27 +564,18 @@ CREATE OR REPLACE FUNCTION fn_lister_familles_accueil_animal(
 )
     RETURNS TABLE
             (
-                id_accueil     INT,
-                date_debut     TIMESTAMPTZ,
-                date_fin       TIMESTAMPTZ,
-                nom_contact    VARCHAR,
-                prenom_contact VARCHAR,
-                gsm_contact    VARCHAR,
-                email_contact  VARCHAR
+                id                 INT,
+                date_debut         TIMESTAMPTZ,
+                date_fin           TIMESTAMPTZ,
+                ani_id             CHAR(11),
+                famille_accueil_id INT
             )
 AS
 $$
 BEGIN
     RETURN QUERY
-        SELECT fa.famille_accueil_id,
-               fa.date_debut,
-               fa.date_fin,
-               c.nom,
-               c.prenom,
-               c.gsm,
-               c.email
+        SELECT fa.*
         FROM FAMILLE_ACCUEIL fa
-                 JOIN CONTACT c ON fa.famille_accueil_id = c.id
         WHERE fa.ani_id = p_ani_id
         ORDER BY fa.date_debut DESC;
 END;
@@ -554,6 +587,7 @@ CREATE OR REPLACE FUNCTION fn_lister_animaux_famille_accueil(
 )
     RETURNS TABLE
             (
+                id          INT,
                 ani_id      CHAR(11),
                 nom_animal  VARCHAR,
                 type_animal type_animal,
@@ -564,7 +598,8 @@ AS
 $$
 BEGIN
     RETURN QUERY
-        SELECT fa.ani_id,
+        SELECT fa.id,
+               fa.ani_id,
                a.nom,
                a.type,
                fa.date_debut,
@@ -688,13 +723,13 @@ BEGIN
 
                WHEN NOT EXISTS (SELECT 1
                                 FROM ANI_SORTIE s
-                                WHERE s.ani_id = a.id
-                                  AND s.date >= (SELECT MAX(e.date) FROM ANI_ENTREE e WHERE e.ani_id = a.id))
+                                WHERE s.ani_id = a.id AND s.date <= CURRENT_TIMESTAMP
+                                  AND s.date >= (SELECT MAX(e.date) FROM ANI_ENTREE e WHERE e.ani_id = a.id AND e.date <= CURRENT_TIMESTAMP))
                    THEN 'present'
 
                ELSE (SELECT s.raison || '|' || TO_CHAR(s.date, 'DD/MM/YYYY')
                      FROM ANI_SORTIE s
-                     WHERE s.ani_id = a.id
+                     WHERE s.ani_id = a.id AND s.date <= CURRENT_TIMESTAMP
                      ORDER BY s.date DESC
                      LIMIT 1)
                END
@@ -709,24 +744,27 @@ $$ LANGUAGE plpgsql;
 -- Animal compatibilité
 CREATE OR REPLACE FUNCTION fn_animal_compatibilite(
     p_ani_id CHAR(11)
-) RETURNS TABLE (
-    comp_type VARCHAR,
-    valeur BOOLEAN,
-    description TEXT,
-    updated_at TIMESTAMPTZ
-) AS
-    $$
+)
+    RETURNS TABLE
+            (
+                comp_type   VARCHAR,
+                valeur      BOOLEAN,
+                description TEXT,
+                updated_at  TIMESTAMPTZ
+            )
+AS
+$$
 BEGIN
     RETURN QUERY
-    SELECT c.type,
-           ac.valeur,
-           ac.description,
-           ac.updated_at
-    FROM ANI_COMPATIBILITE ac
-             JOIN COMPATIBILITE c ON ac.comp_id = c.id
-    WHERE ac.ani_id = p_ani_id;
+        SELECT c.type,
+               ac.valeur,
+               ac.description,
+               ac.updated_at
+        FROM ANI_COMPATIBILITE ac
+                 JOIN COMPATIBILITE c ON ac.comp_id = c.id
+        WHERE ac.ani_id = p_ani_id;
 END;
-    $$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 -- ===========================================================================================================================================================
 -- VIEWS
 
@@ -739,6 +777,6 @@ WHERE a.deleted_at IS NULL;
 
 -- Lister les animaux avec leurs compatibilités
 CREATE OR REPLACE VIEW vue_animaux_compatibilites AS
-    SELECT c.type, ac.*
+SELECT c.type, ac.*
 FROM ani_compatibilite ac
          JOIN compatibilite c ON ac.comp_id = c.id;

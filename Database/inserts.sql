@@ -62,7 +62,7 @@ CALL ps_modifier_compatibilite_animal(
         'Mauvaise expérience avec des enfants turbulents'
      );
 
-CALL ps_ajouter_famille_accueil_animal(
+CALL ps_mettre_animal_en_famille_accueil(
         '25122200000', -- p_ani_id
         1 -- p_contact_id
      );

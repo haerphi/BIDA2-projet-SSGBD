@@ -20,7 +20,7 @@ namespace Animalerie.DAL.Repositories
             return _connection.ExecuteReader<Contact>(
                 "SELECT id, nom, prenom, rue, cp, localite, registre_national, gsm, telephone, email FROM CONTACT WHERE id = @id",
                 r => r.ToContact(),
-                false, 
+                false,
                 new { id }
             ).FirstOrDefault();
         }
@@ -32,6 +32,22 @@ namespace Animalerie.DAL.Repositories
                 r => r.ToContact(),
                 false
             );
+        }
+
+        public IEnumerable<Contact> ListerParIds(IEnumerable<int> ids)
+        {
+            if (ids.Any())
+            {
+                return _connection.ExecuteReader<Contact>(
+                    $"SELECT id, nom, prenom, rue, cp, localite, registre_national, gsm, telephone, email FROM CONTACT WHERE id IN ({string.Join(",", ids)})",
+                    r => r.ToContact(),
+                    false
+                );
+            }
+            else
+            {
+                return Enumerable.Empty<Contact>();
+            }
         }
     }
 }

@@ -17,18 +17,19 @@ IServiceCollection services = new ServiceCollection();
 
 #region Database
 services.AddSingleton<AnimalerieDBContext>(sp => AnimalerieDBContext.Build(connectionString));
-
 #endregion
 
 
 #region Repositories
 services.AddSingleton<IContactRepository, ContactRepository>();
 services.AddSingleton<IAnimalRepository, AnimalRepository>();
+services.AddSingleton<ICompatibiliteRepository, CompatibiliteRepository>();
 #endregion
 
 #region Services
 services.AddSingleton<IContactService, ContactService>();
 services.AddSingleton<IAnimalService, AnimalService>();
+services.AddSingleton<ICompatibiliteService, CompatibiliteService>();
 #endregion
 
 

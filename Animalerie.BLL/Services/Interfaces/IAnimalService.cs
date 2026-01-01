@@ -12,6 +12,10 @@ namespace Animalerie.BLL.Services.Interfaces
         public void Supprimer(string id);
 
         public void ModifierCompatibilite(string aniId, int compId, bool valeur, string? desc = null);
-        public IEnumerable<AniCompatibilite> ListCompatibilites(string animalId);        
+        public IEnumerable<AniCompatibilite> ListCompatibilites(string animalId);
+        public IEnumerable<FamilleAccueil> ListerFamillesAccueil(string animalId, bool includeContact = false, int offset = 0, int limit = 20);
+        public FamilleAccueil? FamilleAccueilActuelle(string animalId, bool includeContact);
+        public void MettreEnFamilleAccueil(string animalId, int contactId, DateTime dateDebut, DateTime? dateFin = null);
+        public void ModifierDateFinFamilleAccueil(int accueilId, DateTime? dateFin);
     }
 }

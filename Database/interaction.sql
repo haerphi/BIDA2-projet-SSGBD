@@ -90,6 +90,9 @@ CALL ps_supprimer_animal(
         '25122200000' -- p_id (yymmddxxxxx)
      );
 
+-- Lister les compatibilités
+SELECT * FROM compatibilite;
+
 -- Ajouter/Modifier une compatibilité sur un animal
 CALL ps_modifier_compatibilite_animal(
         '25122200000',
@@ -119,16 +122,14 @@ SELECT *
 FROM vue_animaux
     WHERE status = 'present';
 
-
-
 -- Ajouter une nouvelle famille d’accueil à un animal (la date d’arrivée et la personne de contact sont obligatoires)
-CALL ps_ajouter_famille_accueil_animal(
+CALL ps_mettre_animal_en_famille_accueil(
         '25122200000', -- p_ani_id
         1 -- p_contact_id
      );
 
 CALL ps_modifier_date_fin_famille_accueil(
-        '25122200000', -- p_ani_id
+        1, -- p_ani_id
         current_timestamp -- p_date_fin
      );
 

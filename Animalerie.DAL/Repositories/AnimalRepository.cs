@@ -11,10 +11,12 @@ namespace Animalerie.DAL.Repositories
     public class AnimalRepository : IAnimalRepository
     {
         AnimalerieDBContext _dbContext;
+        IContactRepository _contactRepository;
 
-        public AnimalRepository(AnimalerieDBContext dbContext)
+        public AnimalRepository(AnimalerieDBContext dbContext, IContactRepository contactRepository)
         {
             _dbContext = dbContext;
+            _contactRepository = contactRepository;
         }
 
         public void Ajouter(Animal animal, string[] couleurs, Contact contact, RaisonEntree raison, DateTime dateEntree)
@@ -87,9 +89,15 @@ namespace Animalerie.DAL.Repositories
             });
         }
 
-        public void ModifierCompatibilite(string aniId, int compId, bool valeur, string? desc = null)
+        public void ModifierCompatibilite(AniCompatibilite aniCompatibilite)
         {
-            throw new NotImplementedException();
+            _dbContext.Connection.ExecuteNonQuery("ps_modifier_compatibilite_animal", true, new
+            {
+                p_ani_id = aniCompatibilite.AniId,
+                p_comp_id = aniCompatibilite.comp.Id,
+                p_valeur = aniCompatibilite.Valeur,
+                p_description = aniCompatibilite.Description
+            });
         }
 
         public IEnumerable<AniCompatibilite> ListCompatibilites(string animalId)
@@ -105,6 +113,69 @@ namespace Animalerie.DAL.Repositories
         public void Supprimer(string id)
         {
             throw new NotImplementedException();
+        }
+
+        public IEnumerable<FamilleAccueil> ListerFamillesAccueil(string animalId, bool includeContact = false, int offset = 0, int limit = 20)
+        {
+            List<FamilleAccueil> familleAccueils = _dbContext.Connection.ExecuteReader<FamilleAccueil>(
+                "SELECT * FROM fn_lister_familles_accueil_animal(@p_animal_id) ORDER BY date_fin DESC LIMIT @p_limit OFFSET @p_offset",
+                (r) => r.ToFamilleAccueil(),
+                false,
+                new
+                {
+                    p_animal_id = animalId,
+                    p_limit = limit,
+                    p_offset = offset
+                }
+            ).ToList();
+
+            if (includeContact)
+            {
+                List<int> contactIds = familleAccueils.Select(fa => fa.ContactId).Distinct().ToList();
+                List<Contact> contacts = _contactRepository.ListerParIds(contactIds).ToList();
+
+                foreach (var familleAccueil in familleAccueils)
+                {
+                    familleAccueil.Contact = contacts.FirstOrDefault(c => c.Id == familleAccueil.ContactId);
+                }
+            }
+
+            return familleAccueils;
+        }
+
+        public FamilleAccueil? FamilleAccueilActuelle(string animalId, bool includeContact)
+        {
+            FamilleAccueil? fa =  _dbContext.Connection.ExecuteReader<FamilleAccueil>(
+                "SELECT * FROM fn_lister_familles_accueil_animal(@p_animal_id) WHERE date_fin IS NULL OR date_fin > CURRENT_TIMESTAMP",
+                (r) => r.ToFamilleAccueil(),
+                false,
+                new { p_animal_id = animalId }
+            ).FirstOrDefault();
+
+            if (fa != null && includeContact)
+            {
+                fa.Contact = _contactRepository.Consulter(fa.ContactId);
+            }
+            return fa;
+        }
+
+        public void MettreEnFamilleAccueil(FamilleAccueil familleAccueil)
+        {
+            _dbContext.Connection.ExecuteNonQuery("ps_mettre_animal_en_famille_accueil", true, new
+            {
+                p_ani_id = familleAccueil.AniId,
+                p_famille_accueil_id = familleAccueil.ContactId,
+                p_date_fin = familleAccueil.DateFin
+            });
+        }
+
+        public void ModifierDateFinFamilleAccueil(FamilleAccueil familleAccueil)
+        {
+            _dbContext.Connection.ExecuteNonQuery("ps_modifier_date_fin_famille_accueil", true, new
+            {
+                p_accueil_id = familleAccueil.Id,
+                p_date_fin = familleAccueil.DateFin
+            });
         }
     }
 }

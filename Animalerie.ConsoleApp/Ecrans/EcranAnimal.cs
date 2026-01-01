@@ -5,6 +5,8 @@ using Animalerie.Domain.CustomEnums.ListingFilters;
 using Animalerie.Domain.Models;
 using Animalerie.Domain.Models.Listing;
 using Animalerie.Domain.Patterns;
+using System.Diagnostics.Metrics;
+using System.Reflection.PortableExecutable;
 using Tools.ConsoleApp.Input;
 
 namespace Animalerie.ConsoleApp.Ecrans
@@ -13,40 +15,19 @@ namespace Animalerie.ConsoleApp.Ecrans
     {
         private readonly IAnimalService _animalService;
         private readonly IContactService _contactService;
+        private readonly ICompatibiliteService _compatibiliteService;
 
-        public EcranAnimal(IAnimalService animalService, IContactService contactService)
+        public EcranAnimal(IAnimalService animalService, IContactService contactService, ICompatibiliteService compatibiliteService)
         {
             _animalService = animalService;
             _contactService = contactService;
+            _compatibiliteService = compatibiliteService;
         }
 
         public void Ajouter()
         {
             Console.Clear();
             Console.WriteLine("Ajout d'un animal:");
-
-            //Animal animal2 = new Animal(
-            //    id:  "29122500000",
-            //    nom: "White",
-            //    type: TypeAnimal.Chien,
-            //    sexe: SexeAnimal.M,
-            //    particularites: "",
-            //    description: "",
-            //    dateSterilisation: null,
-            //    dateNaissance: DateTime.Now.AddDays(-2),
-            //    couleurs: ["Crème", "Blanc"],
-            //    dateDeces: null
-            //    );
-            //_animalService.Ajouter(
-            //    animal2,
-            //    couleurs: ["Crème", "Blanc"],
-            //    contactId: 1,
-            //    raison: RaisonEntree.Errant,
-            //    dateEntree: DateTime.Now
-            //);
-
-
-            //return;
 
             // ID
             string defaultId = DateTime.Now.ToString("yyMMdd") + "00000"; // TODO (si temps) récupérer l dernière ID
@@ -322,9 +303,9 @@ namespace Animalerie.ConsoleApp.Ecrans
                 }
 
                 Inputs.ReadConfirmation(
-                    prompt: "Voulez-vous filter la liste d'animaux ? (O/n) : \n>",
+                    prompt: "Voulez-vous filter la liste d'animaux ? (o/N) : \n>",
                     userInput: out displayListAgain,
-                    defaultValue: true
+                    defaultValue: false
                 );
 
                 if (displayListAgain)
@@ -381,29 +362,32 @@ namespace Animalerie.ConsoleApp.Ecrans
             } while (displayListAgain);
         }
 
-        public void Consulter()
+        public void Consulter(string? animalId = null)
         {
             Console.Clear();
 
             Console.WriteLine("Consultation d'un animal:");
-            var errors = Inputs.ReadString(
-                prompt: "Entrez l'identifiant de l'animal à consulter (ou tapez 'quit') : \n>",
-                validators: [InputValidator.Match(AnimalPatterns.ID)],
-                userInput: out string inputId,
-                exitCondition: InputExitCondition.IsQuitCommand,
-                displayError: Inputs.DisplayErrors
-            );
-
-            if (errors.Contains(Inputs.QUIT_ERROR))
+            if (animalId is null)
             {
-                Console.WriteLine("Consultation annulée.");
-                return;
+                var errors = Inputs.ReadString(
+                    prompt: "Entrez l'identifiant de l'animal à consulter (ou tapez 'quit') : \n>",
+                    validators: [InputValidator.Match(AnimalPatterns.ID)],
+                    userInput: out animalId,
+                    exitCondition: InputExitCondition.IsQuitCommand,
+                    displayError: Inputs.DisplayErrors
+                );
+
+                if (errors.Contains(Inputs.QUIT_ERROR) || animalId is null)
+                {
+                    Console.WriteLine("Consultation annulée.");
+                    return;
+                }
             }
 
-            Animal? animal = _animalService.Consulter(inputId);
+            Animal? animal = _animalService.Consulter(animalId);
             if (animal is null)
             {
-                Console.WriteLine($"Aucun animal trouvé avec l'identifiant {inputId}.");
+                Console.WriteLine($"Aucun animal trouvé avec l'identifiant {animalId}.");
                 return;
             }
 
@@ -411,11 +395,341 @@ namespace Animalerie.ConsoleApp.Ecrans
             Console.WriteLine(animal.ToString());
 
             Console.WriteLine("Compatibilité de l'animal:");
-            IEnumerable<AniCompatibilite> compatibilites = _animalService.ListCompatibilites(animal.Id);
-            foreach (var comp in compatibilites)
+            IEnumerable<AniCompatibilite> aniCompatibilites = _animalService.ListCompatibilites(animal.Id);
+            foreach (var aniComp in aniCompatibilites)
             {
-                Console.WriteLine($"\t- {comp.CompType}:  {comp.Valeur}, Description: {comp.Description}, UpdatedAt: {comp.UpdatedAt}");
+                Console.WriteLine($"\t- {aniComp.comp.Type}:  {aniComp.Valeur}, Description: {aniComp.Description}, UpdatedAt: {aniComp.UpdatedAt}");
             }
+            Console.WriteLine(new string('-', 5));
+            MenuDetails(animalId);
+        }
+
+        public void MenuDetails(string animalId)
+        {
+            bool quitter = false;
+
+            Console.WriteLine("Actions:");
+            Console.WriteLine("\t1. Modifier les compatibilités");
+            Console.WriteLine("\t2. Lister les familles d'accueil");
+            Console.WriteLine("\t3. Mettre en familles d'accueil");
+            Console.WriteLine("\t4. Enregistrer une entrée");
+            Console.WriteLine("\t5. Enregistrer une sortie");
+            Console.WriteLine("\t0. Retour au menu principal");
+            var errors = Inputs.ReadInt(
+                prompt: "Choisissez une action : \n>",
+                validators: [InputValidator.Range(0, 5)],
+                userInput: out int? inputChoice,
+                displayError: (IEnumerable<string> errors) => Console.WriteLine("Choix invalide")
+            );
+
+            switch (inputChoice)
+            {
+                case 1:
+                    ModifierCompatibilites(animalId);
+                    break;
+                case 2:
+                    ListerFamillesAccueil(animalId);
+                    break;
+                case 3:
+                    MettreEnFamilleAccueil(animalId);
+                    break;
+                case 4:
+                    EnregistrerEntree(animalId);
+                    break;
+                case 5:
+                case 0:
+                    quitter = true;
+                    break;
+            }
+
+            if (!quitter)
+            {
+                Consulter(animalId);
+            }
+        }
+
+        public void ModifierCompatibilites(string? animalId = null)
+        {
+            Console.WriteLine("Modification des compatibilités d'un animal:");
+
+            if (string.IsNullOrEmpty(animalId))
+            {
+                var errors = Inputs.ReadString(
+                    prompt: "Entrez l'identifiant de l'animal à modifier (ou tapez 'quit') : \n>",
+                    validators: [InputValidator.Match(AnimalPatterns.ID)],
+                    userInput: out animalId,
+                    exitCondition: InputExitCondition.IsQuitCommand,
+                    displayError: Inputs.DisplayErrors
+                );
+
+                if (errors.Contains(Inputs.QUIT_ERROR) || animalId is null)
+                {
+                    Console.WriteLine("Consultation annulée.");
+                    return;
+                }
+            }
+
+            Animal? animal = _animalService.Consulter(animalId);
+            if (animal is null)
+            {
+                Console.WriteLine($"Aucun animal trouvé avec l'identifiant {animalId}.");
+                return;
+            }
+
+            List<Compatibilite> allCompatibilites = _compatibiliteService.Lister().ToList();
+            List<AniCompatibilite> aniCompatibilites = _animalService.ListCompatibilites(animal.Id).ToList();
+            Console.WriteLine("Quels compatibilités souhaitez-vous modofier?");
+            foreach (var comp in allCompatibilites)
+            {
+                AniCompatibilite? aniComp = aniCompatibilites.FirstOrDefault(c => c.comp.Id == comp.Id);
+
+                if (aniComp is not null)
+                {
+                    Console.WriteLine($"\t{comp.Id}. {comp.Type}: actuel = {aniComp.Valeur}, description = {aniComp.Description}");
+                }
+                else
+                {
+                    Console.WriteLine($"\t{comp.Id}. {comp.Type}: actuel = non défini");
+                }
+            }
+
+            bool continuerDeModifier = false;
+            do
+            {
+                var errors = Inputs.ReadInt(
+                    prompt: "Entrez l'ID de la compatibilité à modifier (ou tapez '0' pour quitter) : \n>",
+                    validators: [InputValidator.IsIn(allCompatibilites.Select(c => (int?)c.Id).Append(0))], // TODO (si temps) corriger ce "int?"
+                    userInput: out int? inputCompId,
+                    displayError: Inputs.DisplayErrors
+                );
+
+                if (inputCompId is null || inputCompId == 0)
+                {
+                    Console.WriteLine("Modification des compatibilités annulée.");
+                    continuerDeModifier = false;
+                }
+                else
+                {
+                    Compatibilite compatibilite = allCompatibilites.First(c => c.Id == inputCompId);
+
+                    // Valeur
+                    errors = Inputs.ReadConfirmation(
+                        prompt: $"Est-ce que {animal.Nom} est compatible avec {compatibilite.Type} ? (o/n ou laisser vide pour ne pas indiquer de compatibilité) : \n>",
+                        userInput: out bool inputValeur,
+                        exitCondition: InputExitCondition.IsEmptyInput,
+                        displayError: Inputs.DisplayErrors
+                    );
+                    // Description
+                    errors = Inputs.ReadString(
+                        prompt: $"Entrez une description pour cette compatibilité (ou laisser vide pour aucune) : \n>",
+                        validators: [],
+                        userInput: out string? inputDescription,
+                        defaultValue: null,
+                        exitCondition: InputExitCondition.IsEmptyInput,
+                        displayError: Inputs.DisplayErrors
+                    );
+                    // Appliquer la modification
+                    _animalService.ModifierCompatibilite(
+                        aniId: animal.Id,
+                        compId: (int)inputCompId,
+                        valeur: inputValeur,
+                        desc: inputDescription
+                    );
+                    // Continuer ?
+                    Inputs.ReadConfirmation(
+                        prompt: "Voulez-vous modifier une autre compatibilité ? (o/N) : \n>",
+                        userInput: out continuerDeModifier,
+                        defaultValue: false,
+                        displayError: Inputs.DisplayErrors
+                    );
+                }
+            } while (continuerDeModifier);
+        }
+
+        public void ListerFamillesAccueil(string? animalId = null)
+        {
+            Console.WriteLine("Liste des familles d'accueil:");
+
+            if (string.IsNullOrEmpty(animalId))
+            {
+                var errors = Inputs.ReadString(
+                    prompt: "Entrez l'identifiant de l'animal à modifier (ou tapez 'quit') : \n>",
+                    validators: [InputValidator.Match(AnimalPatterns.ID)],
+                    userInput: out animalId,
+                    exitCondition: InputExitCondition.IsQuitCommand,
+                    displayError: Inputs.DisplayErrors
+                );
+
+                if (errors.Contains(Inputs.QUIT_ERROR) || animalId is null)
+                {
+                    Console.WriteLine("Consultation annulée.");
+                    return;
+                }
+            }
+
+            IEnumerable<FamilleAccueil> familles = _animalService.ListerFamillesAccueil(animalId, true);
+
+            Console.WriteLine($"{"ID",-5} | {"Contact",-12} | {"Date début",-18} | {"Date fin",-18}");
+
+            foreach (var famille in familles)
+            {
+                Console.WriteLine($"{famille.Id,-5} | {famille.Contact!.Nom,-12} | {famille.DateDebut,-18} | {famille.DateFin,-18}");
+            }
+
+            Inputs.Pause("\nAppuyez sur une touche pour revenir au menu de l'animal...");
+        }
+
+        public void MettreEnFamilleAccueil(string? animalId = null)
+        {
+            Console.WriteLine("Mettre un animal en famille d'accueil:");
+            if (string.IsNullOrEmpty(animalId))
+            {
+                var errorsA = Inputs.ReadString(
+                    prompt: "Entrez l'identifiant de l'animal à modifier (ou tapez 'quit') : \n>",
+                    validators: [InputValidator.Match(AnimalPatterns.ID)],
+                    userInput: out animalId,
+                    exitCondition: InputExitCondition.IsQuitCommand,
+                    displayError: Inputs.DisplayErrors
+                );
+                if (errorsA.Contains(Inputs.QUIT_ERROR) || animalId is null)
+                {
+                    Console.WriteLine("Consultation annulée.");
+                    return;
+                }
+            }
+
+            Animal? animal = _animalService.Consulter(animalId);
+            if (animal is null)
+            {
+                Console.WriteLine($"Aucun animal trouvé avec l'identifiant {animalId}.");
+                return;
+            }
+
+            // contact ID
+            IEnumerable<Contact> contacts = _contactService.Lister();
+            Console.WriteLine("Contacts existants:");
+            foreach (var contact in contacts)
+            {
+                Console.WriteLine($"\t{contact.Id} - {contact.Nom} {contact.Prenom}");
+            }
+            IEnumerable<int?> contactIds = contacts.Select(c => (int?)c.Id); // TODO (si temps) corriger ce "int?"
+            var errors = Inputs.ReadInt(
+                prompt: "Identifiant du contact à mettre en famille d'accueil (ou tapez 'quit') : \n>",
+                validators: [InputValidator.IsPositive(), InputValidator.IsIn(contactIds)],
+                userInput: out int? inputContactId,
+                exitCondition: InputExitCondition.IsQuitCommand,
+                displayError: Inputs.DisplayErrors
+            );
+
+            if (errors.Contains(Inputs.QUIT_ERROR) || inputContactId is null)
+            {
+                Console.WriteLine("Saisie annulée.");
+                return;
+            }
+
+            // Date de fin
+            errors = Inputs.ReadDateTime(
+                prompt: "Date de fin de la famille d'accueil au format dd/mm/yyyy (ou laisser vide si indéterminée) : \n>",
+                preValidators: [InputValidator.Match(DatePatterns.DATE_DDMMYYYY)],
+                validators: [],
+                userInput: out DateTime? inputDateFin,
+                exitCondition: InputExitCondition.IsEmptyInput,
+                displayError: Inputs.DisplayErrors
+            );
+
+            try
+            {
+                _animalService.MettreEnFamilleAccueil(
+                    animalId: animal.Id,
+                    contactId: inputContactId.Value,
+                    dateDebut: DateTime.Now,
+                    dateFin: inputDateFin
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de la mise en famille d'accueil: {ex.Message}");
+            }
+            Inputs.Pause();
+        }
+
+        public void EnregistrerEntree(string? animalId = null)
+        {
+            if (string.IsNullOrEmpty(animalId))
+            {
+                var errors = Inputs.ReadString(
+                    prompt: "Entrez l'identifiant de l'animal à modifier (ou tapez 'quit') : \n>",
+                    validators: [InputValidator.Match(AnimalPatterns.ID)],
+                    userInput: out animalId,
+                    exitCondition: InputExitCondition.IsQuitCommand,
+                    displayError: Inputs.DisplayErrors
+                );
+
+                if (errors.Contains(Inputs.QUIT_ERROR) || animalId is null)
+                {
+                    Console.WriteLine("Consultation annulée.");
+                    return;
+                }
+            }
+
+            Animal? animal = _animalService.Consulter(animalId);
+            if (animal is null)
+            {
+                Console.WriteLine($"Aucun animal trouvé avec l'identifiant {animalId}.");
+                return;
+            }
+
+            if (animal.Status!.StartsWith("famille_accueil"))
+            {
+                // verifier si la date de fin est déjà définie
+                FamilleAccueil? currentAccueil = _animalService.FamilleAccueilActuelle(animal.Id, true);
+
+                if (currentAccueil is not null)
+                {
+                    Console.WriteLine("L'animal est actuellement en famille d'accueil.");
+                    Console.WriteLine($"\t Contact: {currentAccueil.Contact!.Nom} (ID: {currentAccueil.Contact.Id})\n" +
+                        $"\t Du {currentAccueil.DateDebut.ToString("dd/MM/yyyy")}\n" +
+                        $"\t Au {currentAccueil.DateFin?.ToString("dd/MM/yyyy") ?? "indéterminé"}");
+
+                    // proposer de clôturer la famille d'accueil
+                    var errors = Inputs.ReadConfirmation(
+                        prompt: "Voulez-vous modifier la date de fin? (o/N) : \n>",
+                        userInput: out bool mettreAJourDateDeFin,
+                        defaultValue: false,
+                        displayError: Inputs.DisplayErrors
+                    );
+
+                    if (mettreAJourDateDeFin)
+                    {
+                        errors = Inputs.ReadDateTime(
+                            prompt: "Date de fin de la famille d'accueil au format dd/mm/yyyy (ou laisser vide si indéterminée) : \n>",
+                            preValidators: [InputValidator.Match(DatePatterns.DATE_DDMMYYYY)],
+                            validators: [],
+                            userInput: out DateTime? inputDateFin,
+                            exitCondition: InputExitCondition.IsEmptyInput,
+                            defaultValue: null,
+                            displayError: Inputs.DisplayErrors
+                        );
+
+                        try
+                        {
+                            _animalService.ModifierDateFinFamilleAccueil(
+                                accueilId: currentAccueil.Id,
+                                dateFin: inputDateFin
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Erreur lors de la mise à jour de la date de fin de la famille d'accueil: {ex.Message}");
+                        }
+                    }
+                }
+                else
+                {
+                    throw new Exception($"Probleme avec l'animal {animal.Id} et son status {animal.Status}");
+                }
+            }
+            // TODO GERER LES AUTRES STATUS SI BESOIN
         }
     }
 }

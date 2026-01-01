@@ -11,8 +11,4 @@
     <ProjectReference Include="..\Animalerie.Domain\Animalerie.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="CustomExceptions\Animal\" />
-  </ItemGroup>
-
 </Project>

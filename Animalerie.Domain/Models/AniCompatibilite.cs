@@ -2,19 +2,17 @@
 {
     public class AniCompatibilite
     {
-        public bool Valeur { get; set; }
-        public string Description { get; set; }
-        public int CompId { get; set; }
-        public string CompType { get; set; }
+        public Compatibilite comp { get; set; }
         public string AniId { get; set; }
+        public bool Valeur { get; set; }
+        public string? Description { get; set; }
         public DateTime UpdatedAt { get; set; }
 
-        public AniCompatibilite(bool valeur, string description, int compId, string compType, string aniId, DateTime updatedAt)
+        public AniCompatibilite(Compatibilite compatibilite, string aniId, bool valeur, string? description, DateTime updatedAt)
         {
             Valeur = valeur;
             Description = description;
-            CompId = compId;
-            CompType = compType;
+            comp = compatibilite;
             AniId = aniId;
             UpdatedAt = updatedAt;
         }

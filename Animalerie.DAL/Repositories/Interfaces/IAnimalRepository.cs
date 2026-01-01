@@ -10,7 +10,11 @@ namespace Animalerie.DAL.Repositories.Interfaces
         public Animal? Consulter(string id);
         public IEnumerable<Animal> Lister(AnimalFilters? filters = null, int offset = 0, int limit = 20);
         public void Supprimer(string id);
-        public void ModifierCompatibilite(string aniId, int compId, bool valeur, string? desc = null);
+        public void ModifierCompatibilite(AniCompatibilite aniCompatibilite);
         public IEnumerable<AniCompatibilite> ListCompatibilites(string animalId);
+        public IEnumerable<FamilleAccueil> ListerFamillesAccueil(string animalId, bool includeContact = false, int offset = 0, int limit = 20);
+        public FamilleAccueil? FamilleAccueilActuelle(string animalId, bool includeContact);
+        public void MettreEnFamilleAccueil(FamilleAccueil familleAccueil);
+        public void ModifierDateFinFamilleAccueil(FamilleAccueil familleAccueil);
     }
 }

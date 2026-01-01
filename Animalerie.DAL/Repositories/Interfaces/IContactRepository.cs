@@ -6,5 +6,6 @@ namespace Animalerie.DAL.Repositories.Interfaces
     {
         public Contact? Consulter(int id);
         public IEnumerable<Contact> Lister();
+        public IEnumerable<Contact> ListerParIds(IEnumerable<int> ids);
     }
 }

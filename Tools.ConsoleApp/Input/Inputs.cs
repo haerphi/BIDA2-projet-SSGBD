@@ -12,6 +12,12 @@ namespace Tools.ConsoleApp.Input
         public const string INVALID_FORMAT_ERROR = "invalid_format";
         #endregion
 
+        public static void Pause(string text = "\nAppuyez sur une touche pour continuer...")
+        {
+            Console.WriteLine(text);
+            Console.ReadKey();
+        }
+
         public static void DisplayErrors(IEnumerable<string> errors)
         {
             Console.WriteLine("Erreurs de saisie:");
