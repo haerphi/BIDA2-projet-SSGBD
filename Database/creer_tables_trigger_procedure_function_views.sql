@@ -101,6 +101,7 @@ CREATE TABLE ADOPTION
     id           SERIAL PRIMARY KEY,
     statut       statut_adoption                 NOT NULL,
     date_demande TIMESTAMPTZ                     NOT NULL,
+    note         TEXT,
     ani_id       CHAR(11) REFERENCES ANIMAL (id) NOT NULL,
     adoptant_id  INT REFERENCES CONTACT (id)     NOT NULL
 );
@@ -614,7 +615,8 @@ $$ LANGUAGE plpgsql;
 -- Ajouter une adoption
 CREATE OR REPLACE PROCEDURE ps_ajouter_adoption(
     p_ani_id CHAR(11),
-    p_adoptant_id INT
+    p_adoptant_id INT,
+    p_note TEXT
 ) AS
 $$
 BEGIN
@@ -645,22 +647,33 @@ BEGIN
     THEN
 
         RAISE EXCEPTION 'Impossible de creer une adoption : l''animal n''est pas actuellement disponible pour adoption.';
-    ELSE
-        INSERT INTO ADOPTION (ani_id, adoptant_id, statut, date_demande)
-        VALUES (p_ani_id, p_adoptant_id, 'demande', CURRENT_DATE);
+     END IF;
+
+    -- check s'il y a deja une demande par ce contact qui est avec le status "demande"
+    IF EXISTS(SELECT 1
+                FROM ADOPTION WHERE adoptant_id = p_adoptant_id AND
+                                  ani_id = p_ani_id AND
+                                  statut = 'demande'
+            )
+    THEN
+        RAISE EXCEPTION 'Ce contact a déjà une demande en attente pour cet animal';
     END IF;
+
+    INSERT INTO ADOPTION (ani_id, adoptant_id, statut, date_demande, note)
+        VALUES (p_ani_id, p_adoptant_id, 'demande', CURRENT_DATE, p_note);
 END;
 $$ LANGUAGE plpgsql;
 
 -- Modifier le statut d’une adoption
-CREATE OR REPLACE PROCEDURE ps_modifier_statut_adoption(
+CREATE OR REPLACE PROCEDURE ps_modifier_adoption(
     p_adoption_id INT,
-    p_nouveau_statut statut_adoption
+    p_nouveau_statut statut_adoption,
+    p_note TEXT
 ) AS
 $$
 BEGIN
     UPDATE ADOPTION
-    SET statut = p_nouveau_statut
+    SET statut = p_nouveau_statut, note = p_note
     WHERE id = p_adoption_id;
 
     -- Si l'adoption est acceptee, enregistrer la sortie de l'animal

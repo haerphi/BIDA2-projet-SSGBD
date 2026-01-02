@@ -5,9 +5,8 @@ using Animalerie.Domain.CustomEnums.ListingFilters;
 using Animalerie.Domain.Models;
 using Animalerie.Domain.Models.Listing;
 using Animalerie.Domain.Patterns;
-using System.Diagnostics.Metrics;
-using System.Reflection.PortableExecutable;
 using Tools.ConsoleApp.Input;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Animalerie.ConsoleApp.Ecrans
 {
@@ -16,12 +15,14 @@ namespace Animalerie.ConsoleApp.Ecrans
         private readonly IAnimalService _animalService;
         private readonly IContactService _contactService;
         private readonly ICompatibiliteService _compatibiliteService;
+        private readonly IAdoptionService _adoptionService;
 
-        public EcranAnimal(IAnimalService animalService, IContactService contactService, ICompatibiliteService compatibiliteService)
+        public EcranAnimal(IAnimalService animalService, IContactService contactService, ICompatibiliteService compatibiliteService, IAdoptionService adoptionService)
         {
             _animalService = animalService;
             _contactService = contactService;
             _compatibiliteService = compatibiliteService;
+            _adoptionService = adoptionService;
         }
 
         public void Ajouter()
@@ -274,13 +275,23 @@ namespace Animalerie.ConsoleApp.Ecrans
                 couleurs: inputCouleurs.ToArray(),
                 dateDeces: inputDateDeces
                 );
-            _animalService.Ajouter(
-                animal,
-                couleurs: inputCouleurs.ToArray(),
-                contactId: inputContactId.Value,
-                raison: inputRaison.Value,
-                dateEntree: inputDateEntree.Value
-            );
+
+            try
+            {
+                _animalService.Ajouter(
+                    animal,
+                    couleurs: inputCouleurs.ToArray(),
+                    contactId: inputContactId.Value,
+                    raison: inputRaison.Value,
+                    dateEntree: inputDateEntree.Value
+                );
+                Console.WriteLine("Animal ajouté avec succès.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de l'ajout de l'animal: {ex.Message}");
+            }
+            Inputs.Pause();
         }
 
         public void Lister()
@@ -412,12 +423,14 @@ namespace Animalerie.ConsoleApp.Ecrans
             Console.WriteLine("\t1. Modifier les compatibilités");
             Console.WriteLine("\t2. Lister les familles d'accueil");
             Console.WriteLine("\t3. Mettre en familles d'accueil");
-            Console.WriteLine("\t4. Enregistrer une entrée");
-            Console.WriteLine("\t5. Enregistrer une sortie");
+            Console.WriteLine("\t4. Faire une demande d'adoption");
+            Console.WriteLine("\t5. Voir les demandes d'adoption");
+            Console.WriteLine("\t6. Enregistrer une entrée");
+            Console.WriteLine("\t7. Enregistrer une sortie");
             Console.WriteLine("\t0. Retour au menu principal");
             var errors = Inputs.ReadInt(
                 prompt: "Choisissez une action : \n>",
-                validators: [InputValidator.Range(0, 5)],
+                validators: [InputValidator.Range(0, 7)],
                 userInput: out int? inputChoice,
                 displayError: (IEnumerable<string> errors) => Console.WriteLine("Choix invalide")
             );
@@ -434,9 +447,15 @@ namespace Animalerie.ConsoleApp.Ecrans
                     MettreEnFamilleAccueil(animalId);
                     break;
                 case 4:
-                    EnregistrerEntree(animalId);
+                    FaireDemandeAdoption(animalId);
                     break;
                 case 5:
+                    ListerDemanderAdoption(animalId);
+                    break;
+                case 6:
+                    EnregistrerEntree(animalId);
+                    break;
+                case 7:
                 case 0:
                     quitter = true;
                     break;
@@ -651,6 +670,189 @@ namespace Animalerie.ConsoleApp.Ecrans
                 Console.WriteLine($"Erreur lors de la mise en famille d'accueil: {ex.Message}");
             }
             Inputs.Pause();
+        }
+
+        public void FaireDemandeAdoption(string? animalId = null)
+        {
+            if (string.IsNullOrEmpty(animalId))
+            {
+                var errorsA = Inputs.ReadString(
+                    prompt: "Entrez l'identifiant de l'animal à adopter (ou tapez 'quit') : \n>",
+                    validators: [InputValidator.Match(AnimalPatterns.ID)],
+                    userInput: out animalId,
+                    exitCondition: InputExitCondition.IsQuitCommand,
+                    displayError: Inputs.DisplayErrors
+                );
+
+                if (errorsA.Contains(Inputs.QUIT_ERROR) || animalId is null)
+                {
+                    Console.WriteLine("Consultation annulée.");
+                    return;
+                }
+            }
+
+            Animal? animal = _animalService.Consulter(animalId);
+            if (animal is null)
+            {
+                Console.WriteLine($"Aucun animal trouvé avec l'identifiant {animalId}.");
+                return;
+            }
+
+            Console.WriteLine("Faire une demande d'adoption:");
+            // contact ID
+            IEnumerable<Contact> contacts = _contactService.Lister();
+            Console.WriteLine("Contacts existants:");
+            foreach (var contact in contacts)
+            {
+                Console.WriteLine($"\t{contact.Id} - {contact.Nom} {contact.Prenom}");
+            }
+            IEnumerable<int?> contactIds = contacts.Select(c => (int?)c.Id); // TODO (si temps) corriger ce "int?"
+            var errors = Inputs.ReadInt(
+                prompt: "Identifiant du contact qui fait la demande d'adoption (ou tapez 'quit') : \n>",
+                validators: [InputValidator.IsPositive(), InputValidator.IsIn(contactIds)],
+                userInput: out int? inputContactId,
+                exitCondition: InputExitCondition.IsQuitCommand,
+                displayError: Inputs.DisplayErrors
+            );
+            if (errors.Contains(Inputs.QUIT_ERROR) || inputContactId is null)
+            {
+                Console.WriteLine("Saisie annulée.");
+                return;
+            }
+            // Note dans la demande
+            errors = Inputs.ReadString(
+                prompt: "Note à ajouter à la demande d'adoption (ou laisser vide pour aucune) : \n>",
+                validators: [],
+                userInput: out string? inputNote,
+                defaultValue: string.Empty,
+                exitCondition: InputExitCondition.IsEmptyInput,
+                displayError: Inputs.DisplayErrors
+            );
+
+            try
+            {
+                _adoptionService.Ajouter(
+                    animal.Id,
+                    inputContactId.Value,
+                    inputNote
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de la demande d'adoption: {ex.Message}");
+            }
+            Inputs.Pause();
+        }
+
+        public void ListerDemanderAdoption(string? animalId = null)
+        {
+            if (string.IsNullOrEmpty(animalId))
+            {
+                var errorsA = Inputs.ReadString(
+                    prompt: "Entrez l'identifiant de l'animal à adopter (ou tapez 'quit') : \n>",
+                    validators: [InputValidator.Match(AnimalPatterns.ID)],
+                    userInput: out animalId,
+                    exitCondition: InputExitCondition.IsQuitCommand,
+                    displayError: Inputs.DisplayErrors
+                );
+
+                if (errorsA.Contains(Inputs.QUIT_ERROR) || animalId is null)
+                {
+                    Console.WriteLine("Consultation annulée.");
+                    return;
+                }
+            }
+
+            Animal? animal = _animalService.Consulter(animalId);
+            if (animal is null)
+            {
+                Console.WriteLine($"Aucun animal trouvé avec l'identifiant {animalId}.");
+                return;
+            }
+
+            bool changerStatut = false;
+            do
+            {
+                Console.Clear();
+                Console.WriteLine("Liste des demande d'adoptions:");
+                IEnumerable<Adoption> demandes = _animalService.ListerAdoptions(animal.Id);
+                Console.WriteLine(Adoption.TableauEntete());
+                Console.WriteLine(new string('-', Adoption.TableauEntete().Length));
+                foreach (var demande in demandes)
+                {
+                    Console.WriteLine(demande.ToStringTableau());
+                }
+                IEnumerable<int?> demandeIds = demandes.Select(d => (int?)d.Id); // TODO (si temps) corriger ce "int?"
+                var errors = Inputs.ReadInt(
+                    prompt: "Entrez l'ID de la demande d'adoption à modifier (ou laisser vide pour annuler) : \n>",
+                    validators: [InputValidator.IsIn(demandeIds)],
+                    userInput: out int? inputDemandeId,
+                    displayError: Inputs.DisplayErrors,
+                    exitCondition: InputExitCondition.IsEmptyInput
+                );
+
+                if (inputDemandeId is not null)
+                {
+                    changerStatut = true;
+                    // afficher la demande sélectionnée
+                    Adoption demande = demandes.First(d => d.Id == inputDemandeId);
+                    Console.WriteLine("Demande sélectionnée:");
+                    Console.WriteLine(demande);
+                    Console.WriteLine(new string('-', 10));
+
+                    // Nouveau statut
+                    Console.WriteLine("Statuts disponibles:");
+                    Display.EnumOptions<StatutAdoption>();
+
+                    errors = Inputs.ReadEnum<StatutAdoption>(
+                        prompt: "Nouveau statut de la demande d'adoption (ou laisser vide pour ne pas modifier) : \n>",
+                        validators: [],
+                        userInput: out StatutAdoption? inputStatut,
+                        displayError: Inputs.DisplayErrors,
+                        exitCondition: InputExitCondition.IsEmptyInput,
+                        defaultValue: null
+                    );
+
+                    errors = Inputs.ReadString(
+                        prompt: "Note à ajouter à la demande d'adoption (ou laisser vide pour aucune) : \n>",
+                        validators: [],
+                        userInput: out string? inputNote,
+                        defaultValue: string.Empty,
+                        exitCondition: InputExitCondition.IsEmptyInput,
+                        displayError: Inputs.DisplayErrors
+                    );
+
+                    errors = Inputs.ReadConfirmation(
+                        prompt: "Confirmer la modification de la demande d'adoption ? (O/n) : \n>",
+                        userInput: out changerStatut,
+                        defaultValue: true
+                    );
+                    if (changerStatut)
+                    {
+                        try
+                        {
+                            _adoptionService.Modifier(demande.Id,
+                                 inputStatut ?? demande.Statut,
+                                 inputNote
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Erreur lors de la modification du statut de la demande d'adoption: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Modification annulée.");
+                    }
+
+                    Inputs.Pause();
+                }
+                else
+                {
+                    changerStatut = false;
+                }
+            } while (changerStatut);
         }
 
         public void EnregistrerEntree(string? animalId = null)

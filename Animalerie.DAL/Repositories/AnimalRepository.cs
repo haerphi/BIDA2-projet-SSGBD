@@ -177,5 +177,30 @@ namespace Animalerie.DAL.Repositories
                 p_date_fin = familleAccueil.DateFin
             });
         }
+
+        public IEnumerable<Adoption> ListerAdoptions(string animalId, bool includeContact = false, int offset = 0, int limit = 20)
+        {
+            List<Adoption> adoptions = _dbContext.Connection.ExecuteReader<Adoption>(
+                "SELECT * FROM adoption WHERE ani_id = @p_animal_id ORDER BY date_demande DESC LIMIT @p_limit OFFSET @p_offset",
+                (r) => r.ToAdoption(),
+                false,
+                new
+                {
+                    p_animal_id = animalId,
+                    p_limit = limit,
+                    p_offset = offset
+                }
+            ).ToList();
+            if (includeContact)
+            {
+                List<int> contactIds = adoptions.Select(a => a.ContactId).Distinct().ToList();
+                List<Contact> contacts = _contactRepository.ListerParIds(contactIds).ToList();
+                foreach (var adoption in adoptions)
+                {
+                    adoption.Contact = contacts.FirstOrDefault(c => c.Id == adoption.ContactId);
+                }
+            }
+            return adoptions;
+        }
     }
 }

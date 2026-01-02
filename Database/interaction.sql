@@ -148,9 +148,10 @@ CALL ps_ajouter_adoption(
      );
 
 -- Modifier le statut d’une adoption
-CALL ps_modifier_statut_adoption(
+CALL ps_modifier_adoption(
         1, -- p_adoption_id
-        'acceptee' -- p_nouveau_statut (de type statut_adoption)
+        'acceptee', -- p_nouveau_statut (de type statut_adoption)
+        'Bon environnement' -- p_note
      );
 
 -- Lister les adoptions et leur statut

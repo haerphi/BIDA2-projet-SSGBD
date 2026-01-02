@@ -16,5 +16,6 @@ namespace Animalerie.DAL.Repositories.Interfaces
         public FamilleAccueil? FamilleAccueilActuelle(string animalId, bool includeContact);
         public void MettreEnFamilleAccueil(FamilleAccueil familleAccueil);
         public void ModifierDateFinFamilleAccueil(FamilleAccueil familleAccueil);
+        public IEnumerable<Adoption> ListerAdoptions(string animalId, bool includeContact = false, int offset = 0, int limit = 20);
     }
 }

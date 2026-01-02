@@ -105,5 +105,10 @@ namespace Animalerie.BLL.Services
 
             _animalRepository.ModifierDateFinFamilleAccueil(familleAccueil);
         }
+
+        public IEnumerable<Adoption> ListerAdoptions(string animalId, bool includeContact = false, int offset = 0, int limit = 20)
+        {
+            return _animalRepository.ListerAdoptions(animalId, includeContact, offset, limit);
+        }
     }
 }

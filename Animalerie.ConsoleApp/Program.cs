@@ -4,11 +4,7 @@ using Animalerie.ConsoleApp.Ecrans;
 using Animalerie.ConsoleApp.Screens;
 using Animalerie.DAL.Repositories;
 using Animalerie.DAL.Repositories.Interfaces;
-using Animalerie.Domain.CustomEnums.Database;
 using Microsoft.Extensions.DependencyInjection;
-using Npgsql;
-using System.Data;
-using System.Data.Common;
 using Tools.Database;
 
 string connectionString = @"Host=localhost;Username=devuser;Password=devpassword;Database=refugeanimaux";
@@ -19,25 +15,24 @@ IServiceCollection services = new ServiceCollection();
 services.AddSingleton<AnimalerieDBContext>(sp => AnimalerieDBContext.Build(connectionString));
 #endregion
 
-
 #region Repositories
 services.AddSingleton<IContactRepository, ContactRepository>();
 services.AddSingleton<IAnimalRepository, AnimalRepository>();
 services.AddSingleton<ICompatibiliteRepository, CompatibiliteRepository>();
+services.AddSingleton<IAdoptionRepository, AdoptionRepository>();
 #endregion
 
 #region Services
 services.AddSingleton<IContactService, ContactService>();
 services.AddSingleton<IAnimalService, AnimalService>();
 services.AddSingleton<ICompatibiliteService, CompatibiliteService>();
+services.AddSingleton<IAdoptionService, AdoptionService>();
 #endregion
-
 
 #region Ecrans
 services.AddTransient<EcranPrincipal>();
 services.AddTransient<EcranAnimal>();
 #endregion
-
 
 var serviceProvider = services.BuildServiceProvider();
 

@@ -60,11 +60,6 @@ namespace Animalerie.ConsoleApp.Screens
                     Console.WriteLine($"\nErreur : {ex.Message}");
                     Console.ResetColor();
                 }
-
-                if (continuer)
-                {
-                    Inputs.Pause("\nAppuyez sur une touche pour revenir au menu...");
-                }
             }
         }
 

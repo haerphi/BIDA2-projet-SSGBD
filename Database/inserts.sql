@@ -35,6 +35,30 @@ CALL ps_ajouter_contact(
         'pines.dipper@example.com'
      );
 
+CALL ps_ajouter_contact(
+        'Pines', -- p_nom
+        'Mabel', -- p_prenom
+        '90.12.31-456.79', -- p_registre_national
+        '618 Gopher Road', -- p_rue
+        '97001', -- p_cp
+        'Gravity Falls', -- p_localite
+        '0612345678', -- p_gsm
+        NULL, -- p_telephone
+        'pines.mabel@example.com'
+     );
+
+CALL ps_ajouter_contact(
+        'Cypher', -- p_nom
+        'Bill', -- p_prenom
+        '00.00.00-000.00', -- p_registre_national
+        '618 Gopher Road', -- p_rue
+        '97001', -- p_cp
+        'Gravity Falls', -- p_localite
+        '0612345678', -- p_gsm
+        NULL, -- p_telephone
+        'cypher.bill@example.com'
+     );
+
 CALL ps_ajouter_animal(
         1, -- p_contact_id
         '25122200000', -- p_id (yymmddxxxxx)
