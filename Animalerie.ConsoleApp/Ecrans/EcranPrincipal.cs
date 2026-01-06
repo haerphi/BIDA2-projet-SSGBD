@@ -24,9 +24,9 @@ namespace Animalerie.ConsoleApp.Screens
                 Console.WriteLine("1.  Ajouter un animal");
                 Console.WriteLine("2.  Lister les animaux");
                 Console.WriteLine("3.  Consulter un animal (Détails/Modif)");
-                Console.WriteLine("4.  Ajouter un contact");
-                Console.WriteLine("5.  Lister les contacts");
-                Console.WriteLine("6.  Consulter un contact (Détails/Modif)");
+                Console.WriteLine("4.  Ajouter un contact [Non implémenté]");
+                Console.WriteLine("5.  Lister les contacts [Non implémenté]");
+                Console.WriteLine("6.  Consulter un contact (Détails/Modif) [Non implémenté]");
 
                 Console.WriteLine("0.  Quitter");
                 Console.Write("\nVotre choix : ");

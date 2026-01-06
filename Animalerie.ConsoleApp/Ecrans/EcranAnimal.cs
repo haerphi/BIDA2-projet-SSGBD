@@ -425,8 +425,8 @@ namespace Animalerie.ConsoleApp.Ecrans
             Console.WriteLine("\t3. Mettre en familles d'accueil");
             Console.WriteLine("\t4. Faire une demande d'adoption");
             Console.WriteLine("\t5. Voir les demandes d'adoption");
-            Console.WriteLine("\t6. Enregistrer une entrée");
-            Console.WriteLine("\t7. Enregistrer une sortie");
+            Console.WriteLine("\t6. Enregistrer une entrée  [Non implémenté]");
+            Console.WriteLine("\t7. Enregistrer une sortie  [Non implémenté]");
             Console.WriteLine("\t0. Retour au menu principal");
             var errors = Inputs.ReadInt(
                 prompt: "Choisissez une action : \n>",
