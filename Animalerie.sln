@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Animalerie.Domain", "Animal
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tools.ConsoleApp", "Tools.ConsoleApp\Tools.ConsoleApp.csproj", "{104BD7FA-A14C-470A-9E84-B93BB528676D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Animalerie.WPF", "Animalerie.WPF\Animalerie.WPF.csproj", "{C0A9559D-7EA5-40FE-9497-2A282F794CF0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{104BD7FA-A14C-470A-9E84-B93BB528676D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{104BD7FA-A14C-470A-9E84-B93BB528676D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{104BD7FA-A14C-470A-9E84-B93BB528676D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0A9559D-7EA5-40FE-9497-2A282F794CF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0A9559D-7EA5-40FE-9497-2A282F794CF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0A9559D-7EA5-40FE-9497-2A282F794CF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0A9559D-7EA5-40FE-9497-2A282F794CF0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
