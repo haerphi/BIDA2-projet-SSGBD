@@ -8,63 +8,40 @@
             <TextBlock Text="Ajouter un nouvel animal" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
 
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
                 <Label Content="Identifiant :" Grid.Row="0"/>
-                <TextBox x:Name="txtId" Grid.Row="0" Grid.Column="1" Margin="5"/>
+                <TextBox Text="{Binding Id, UpdateSourceTrigger=PropertyChanged}" Grid.Row="0" Grid.Column="1" Margin="5"/>
 
                 <Label Content="Nom :" Grid.Row="1"/>
-                <TextBox x:Name="txtNom" Grid.Row="1" Grid.Column="1" Margin="5"/>
+                <TextBox Text="{Binding Nom}" Grid.Row="1" Grid.Column="1" Margin="5"/>
 
                 <Label Content="Type :" Grid.Row="2"/>
-                <ComboBox x:Name="cbType" Grid.Row="2" Grid.Column="1" Margin="5"/>
+                <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding SelectedType}" Grid.Row="2" Grid.Column="1" Margin="5"/>
 
                 <Label Content="Sexe :" Grid.Row="3"/>
-                <ComboBox x:Name="cbSexe" Grid.Row="3" Grid.Column="1" Margin="5"/>
+                <ComboBox ItemsSource="{Binding Sexes}" SelectedItem="{Binding SelectedSexe}" Grid.Row="3" Grid.Column="1" Margin="5"/>
 
                 <Label Content="Date Naissance :" Grid.Row="4"/>
-                <DatePicker x:Name="dpNaissance" Grid.Row="4" Grid.Column="1" Margin="5"/>
+                <DatePicker SelectedDate="{Binding DateNaissance}" Grid.Row="4" Grid.Column="1" Margin="5"/>
 
                 <Label Content="Couleurs :" Grid.Row="5"/>
-                <TextBox x:Name="txtCouleurs" Grid.Row="5" Grid.Column="1" Margin="5"/>
-
-                <Label Content="Particularités :" Grid.Row="6"/>
-                <TextBox x:Name="txtPartic" Grid.Row="6" Grid.Column="1" Margin="5" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
-
-                <Label Content="Description :" Grid.Row="7"/>
-                <TextBox x:Name="txtDesc" Grid.Row="7" Grid.Column="1" Margin="5" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
+                <TextBox Text="{Binding Couleurs}" Grid.Row="5" Grid.Column="1" Margin="5"/>
 
                 <Label Content="Date Stérilisation :" Grid.Row="8"/>
-                <DatePicker x:Name="dpSteril" Grid.Row="8" Grid.Column="1" Margin="5"/>
+                <DatePicker SelectedDate="{Binding DateSterilisation}" Grid.Row="8" Grid.Column="1" Margin="5"/>
 
                 <Label Content="Raison Entrée :" Grid.Row="9"/>
-                <ComboBox x:Name="cbRaison" Grid.Row="9" Grid.Column="1" Margin="5"/>
+                <ComboBox ItemsSource="{Binding Raisons}" SelectedItem="{Binding SelectedRaison}" Grid.Row="9" Grid.Column="1" Margin="5"/>
 
                 <Label Content="Date d'entrée :" Grid.Row="10"/>
-                <DatePicker x:Name="dpEntree" Grid.Row="10" Grid.Column="1" Margin="5"/>
+                <DatePicker SelectedDate="{Binding DateEntree}" Grid.Row="10" Grid.Column="1" Margin="5"/>
 
                 <Label Content="Contact :" Grid.Row="11"/>
-                <ComboBox x:Name="cbContact" Grid.Row="11" Grid.Column="1" Margin="5" DisplayMemberPath="Nom"/>
+                <ComboBox ItemsSource="{Binding Contacts}" SelectedItem="{Binding SelectedContact}" DisplayMemberPath="Nom" Grid.Row="11" Grid.Column="1" Margin="5"/>
             </Grid>
 
-            <Button Content="Enregistrer l'animal" Click="BtnSave_Click" Margin="0,20" Height="40" Background="#27AE60" Foreground="White" FontWeight="Bold"/>
+            <Button Content="Enregistrer l'animal" 
+                    Command="{Binding SaveCommand}" 
+                    Margin="0,20" Height="40" Background="#27AE60" Foreground="White" FontWeight="Bold"/>
         </StackPanel>
     </ScrollViewer>
 </Page>
