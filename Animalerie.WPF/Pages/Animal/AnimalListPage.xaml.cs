@@ -27,10 +27,10 @@ namespace Animalerie.WPF.Pages
         private readonly IAnimalService _animalService;
         private DispatcherTimer _debounceTimer;
 
-        public AnimalListPage(IAnimalService animalService)
+        public AnimalListPage()
         {
             InitializeComponent();
-            _animalService = animalService;
+            _animalService = App.ServiceProvider.GetRequiredService<IAnimalService>();
 
             _debounceTimer = new DispatcherTimer();
             _debounceTimer.Interval = TimeSpan.FromMilliseconds(500);
@@ -42,11 +42,6 @@ namespace Animalerie.WPF.Pages
 
             ChargerEnums();
             AppliquerFiltres();
-        }
-
-        public AnimalListPage()
-            : this(App.ServiceProvider.GetRequiredService<IAnimalService>())
-        {
         }
 
         private void ChargerEnums()
