@@ -4,6 +4,7 @@ using Animalerie.Domain.Models;
 using Animalerie.Domain.Patterns;
 using Animalerie.WPF.Interfaces;
 using Animalerie.WPF.ViewModels;
+using Animalerie.WPF.ViewModels.Animals;
 using Animalerie.WPF.ViewModels.Base;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.RegularExpressions;

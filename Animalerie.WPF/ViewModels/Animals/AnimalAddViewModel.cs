@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 
-namespace Animalerie.WPF.ViewModels
+namespace Animalerie.WPF.ViewModels.Animals
 {
     public class AnimalAddViewModel : ViewModelBase
     {
