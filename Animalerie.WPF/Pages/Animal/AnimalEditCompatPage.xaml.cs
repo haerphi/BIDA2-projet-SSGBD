@@ -1,5 +1,5 @@
 ﻿using Animalerie.BLL.Services.Interfaces;
-using Animalerie.WPF.Interfaces;
+using Animalerie.WPF.Pages.Interfaces;
 using Animalerie.WPF.ViewModels.Animals;
 using Animalerie.WPF.ViewModels.Base;
 using Microsoft.Extensions.DependencyInjection;

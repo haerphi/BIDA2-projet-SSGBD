@@ -11,5 +11,6 @@ namespace Animalerie.DAL.Repositories.Interfaces
     {
         IEnumerable<Compatibilite> Lister();
         Compatibilite? Consulter(int id);
+        public void Modifier(Compatibilite compatibilite);
     }
 }

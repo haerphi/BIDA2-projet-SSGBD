@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Animalerie.WPF.ViewModels.Animals;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -36,6 +37,20 @@ namespace Animalerie.WPF.ViewModels.Base
                 IsDirty = true;
             }
             return true;
+        }
+
+        protected virtual void OnItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(IsDirty))
+            {
+                var item = sender as ViewModelBase;
+
+                // Si l'enfant est sale, le parent devient sale
+                if (item != null && item.IsDirty)
+                {
+                    this.IsDirty = true;
+                }
+            }
         }
     }
 }

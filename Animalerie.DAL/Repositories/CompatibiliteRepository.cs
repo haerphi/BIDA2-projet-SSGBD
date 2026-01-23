@@ -28,5 +28,14 @@ namespace Animalerie.DAL.Repositories
                 new { id }
              ).FirstOrDefault();
         }
+
+        public void Modifier(Compatibilite compatibilite)
+        {
+            _dbContext.Connection.ExecuteNonQuery("ps_modifier_compatibilite", true, new 
+            {
+                p_id = compatibilite.Id,
+                p_type = compatibilite.Type
+            });
+        }
     }
 }

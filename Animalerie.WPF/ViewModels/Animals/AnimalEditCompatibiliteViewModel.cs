@@ -65,20 +65,6 @@ namespace Animalerie.WPF.ViewModels.Animals
             }
         }
 
-        private void OnItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(IsDirty))
-            {
-                var item = sender as AnimalEditCompatibiliteItemViewModel;
-
-                // Si l'enfant est sale, le parent devient sale
-                if (item != null && item.IsDirty)
-                {
-                    this.IsDirty = true;
-                }
-            }
-        }
-
         private void SaveData()
         {
             int saved = 0;

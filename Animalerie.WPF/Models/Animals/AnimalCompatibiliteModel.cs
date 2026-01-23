@@ -1,4 +1,5 @@
 ﻿using Animalerie.Domain.Models;
+using Animalerie.WPF.Models.Compatibilite;
 
 namespace Animalerie.WPF.Models.Animals
 {

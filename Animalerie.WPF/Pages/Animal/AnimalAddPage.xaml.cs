@@ -2,7 +2,7 @@
 using Animalerie.Domain.CustomEnums.Database;
 using Animalerie.Domain.Models;
 using Animalerie.Domain.Patterns;
-using Animalerie.WPF.Interfaces;
+using Animalerie.WPF.Pages.Interfaces;
 using Animalerie.WPF.ViewModels;
 using Animalerie.WPF.ViewModels.Animals;
 using Animalerie.WPF.ViewModels.Base;

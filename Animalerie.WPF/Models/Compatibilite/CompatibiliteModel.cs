@@ -1,4 +1,4 @@
-﻿namespace Animalerie.WPF.Models.Animals
+﻿namespace Animalerie.WPF.Models.Compatibilite
 {
     internal class CompatibiliteModel
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Animalerie.WPF.Interfaces
+namespace Animalerie.WPF.Pages.Interfaces
 {
     public interface ICanCheckDirty
     {

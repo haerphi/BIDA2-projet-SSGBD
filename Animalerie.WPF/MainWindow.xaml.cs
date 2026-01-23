@@ -1,6 +1,7 @@
 ﻿using Animalerie.BLL.Services.Interfaces;
-using Animalerie.WPF.Interfaces;
 using Animalerie.WPF.Pages;
+using Animalerie.WPF.Pages.Compatibilite;
+using Animalerie.WPF.Pages.Interfaces;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -22,6 +23,8 @@ namespace Animalerie.WPF
         {
             InitializeComponent();
             MainFrame.Navigating += MainFrame_Navigating;
+
+            MainFrame.Navigate(new AnimalListPage());
         }
 
         private void MainFrame_Navigating(object sender, NavigatingCancelEventArgs e)
@@ -55,6 +58,11 @@ namespace Animalerie.WPF
         private void BtnAjout_Click(object sender, RoutedEventArgs e)
         {
             MainFrame.Navigate(new AnimalAddPage());
+        }
+
+        private void BtnCompatibilites_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new CompatibilitePage());
         }
     }
 }

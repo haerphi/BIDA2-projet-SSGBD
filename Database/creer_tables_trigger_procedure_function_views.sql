@@ -466,6 +466,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Mettre à jour compatiblité
+CREATE OR REPLACE PROCEDURE ps_modifier_compatibilite(
+    p_id INT,
+    p_type VARCHAR(100)
+) AS
+$$
+BEGIN
+    UPDATE COMPATIBILITE
+        SET type = p_type
+        WHERE id = p_id;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Mettre animal en famille d'accueil
 CREATE OR REPLACE PROCEDURE ps_mettre_animal_en_famille_accueil(
     p_ani_id CHAR(11),
