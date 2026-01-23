@@ -35,10 +35,10 @@ namespace Animalerie.WPF.ViewModels.Animals
 
             EditCompatCommand = new RelayCommand(_ => EditCompat());
 
-            LoadData();
+            // l'appel de LoadData() est appelé depuis la page lors du chargement
         }
 
-        private void LoadData()
+        public void LoadData()
         {
             SelectedAnimal = _animalService.Consulter(_animalId).ToAnimalDetailsModel();
 

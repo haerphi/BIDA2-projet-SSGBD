@@ -19,6 +19,16 @@ namespace Animalerie.WPF.Pages.Animal
             vm.RequestNavigateToEditCompat += OnRequestNavigateToEditCompat;
 
             this.DataContext = vm;
+
+            this.Loaded += AnimalDetailsPage_Loaded;
+        }
+
+        private void AnimalDetailsPage_Loaded(object sender, System.Windows.RoutedEventArgs e)
+        {
+            if (this.DataContext is AnimalDetailsViewModel vm)
+            {
+                vm.LoadData();
+            }
         }
 
         public void OnRequestNavigateToEditCompat(string animalId)
