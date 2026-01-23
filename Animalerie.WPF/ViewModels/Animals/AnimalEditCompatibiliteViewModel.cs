@@ -87,6 +87,7 @@ namespace Animalerie.WPF.ViewModels.Animals
             }
 
             System.Diagnostics.Debug.WriteLine("Sauvegarde effectuée pour " + saved + " éléments.");
+            IsDirty = false;
 
             RequestClose?.Invoke();
         }
