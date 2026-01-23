@@ -12,7 +12,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -31,6 +31,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -70,7 +71,6 @@
 
         <GroupBox Grid.Row="3" Header="Particularité" Margin="0,0,0,20">
             <TextBlock Text="{Binding SelectedAnimal.Particularites}" TextWrapping="Wrap" Padding="10"/>
-
         </GroupBox>
 
         <GroupBox Grid.Row="4" Header="Compatibilités" Margin="0,0,0,20">
