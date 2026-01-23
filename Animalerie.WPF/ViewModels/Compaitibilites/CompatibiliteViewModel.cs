@@ -13,13 +13,22 @@ namespace Animalerie.WPF.ViewModels.Compaitibilites
 
         public ObservableCollection<CompatibiliteEditItemViewModel> Compatibilites { get; } = new();
 
+        private string _newCompatibiliteType;
+        public string NewCompatibiliteType
+        {
+            get => _newCompatibiliteType;
+            set => SetProperty(ref _newCompatibiliteType, value);
+        }
+
         // Commandes
         public ICommand SaveItemCommand { get; }
+        public ICommand AddItemCommand { get; }
 
         public CompatibiliteViewModel(ICompatibiliteService compatibiliteService)
         {
             _compatibiliteService = compatibiliteService;
             SaveItemCommand = new RelayCommand(param => SaveItem(param));
+            AddItemCommand = new RelayCommand(AddItem, CanAddItem);
         }
 
         public void LoadData()
@@ -53,6 +62,23 @@ namespace Animalerie.WPF.ViewModels.Compaitibilites
                 item.IsDirty = false;
                 IsDirty = Compatibilites.Any(i => i.IsDirty);
             }
+        }
+
+        private bool CanAddItem(object? param)
+        {
+            return !string.IsNullOrWhiteSpace(NewCompatibiliteType);
+        }
+
+        private void AddItem(object? param)
+        {
+            Compatibilite nouvelleCompat = new Compatibilite(0, NewCompatibiliteType);
+
+            _compatibiliteService.Ajouter(nouvelleCompat);
+
+            NewCompatibiliteType = string.Empty;
+
+            MessageBox.Show("Compatibilité ajouté avec succès !");
+            LoadData();
         }
     }
 }

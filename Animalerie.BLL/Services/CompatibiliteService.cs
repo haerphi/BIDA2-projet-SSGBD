@@ -38,5 +38,11 @@ namespace Animalerie.BLL.Services
             }
             _compatibiliteRepository.Modifier(compatibilite);
         }
+
+        public Compatibilite Ajouter(Compatibilite compatibilite)
+        {
+            // TODO Check for duplicates before adding
+            return _compatibiliteRepository.Ajouter(compatibilite);
+        }
     }
 }

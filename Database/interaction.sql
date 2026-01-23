@@ -184,3 +184,6 @@ SELECT * FROM vaccin;
 SELECT *
 FROM vaccination
 WHERE ani_id = '25122200000';
+
+-- Ajouter compatibilite
+CALL ps_ajouter_compatibilite('Canape');

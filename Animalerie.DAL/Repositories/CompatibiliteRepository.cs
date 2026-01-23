@@ -22,7 +22,7 @@ namespace Animalerie.DAL.Repositories
         public Compatibilite? Consulter(int id)
         {
             return _dbContext.Connection.ExecuteReader<Compatibilite>(
-                "SELECT * FROM compatibilite WHERE id = @id", 
+                "SELECT * FROM compatibilite WHERE id = @id",
                 (r) => r.ToCompatibilite(),
                 false,
                 new { id }
@@ -31,11 +31,25 @@ namespace Animalerie.DAL.Repositories
 
         public void Modifier(Compatibilite compatibilite)
         {
-            _dbContext.Connection.ExecuteNonQuery("ps_modifier_compatibilite", true, new 
+            _dbContext.Connection.ExecuteNonQuery("ps_modifier_compatibilite", true, new
             {
                 p_id = compatibilite.Id,
                 p_type = compatibilite.Type
             });
+        }
+
+        public Compatibilite Ajouter(Compatibilite compatibilite)
+        {
+            compatibilite.Id = (int)_dbContext.Connection.ExecuteScalar(
+                "ps_ajouter_compatibilite",
+                true,
+                new
+                {
+                    p_type = compatibilite.Type
+                }
+               );
+
+            return compatibilite;
         }
     }
 }

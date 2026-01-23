@@ -466,6 +466,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Insertion de compatibilité
+CREATE OR REPLACE PROCEDURE ps_ajouter_compatibilite(
+    IN p_type VARCHAR,
+    INOUT p_new_id INTEGER DEFAULT NULL
+) AS
+$$
+BEGIN
+    INSERT INTO COMPATIBILITE (type)
+    VALUES (p_type)
+    RETURNING id INTO p_new_id;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Mettre à jour compatiblité
 CREATE OR REPLACE PROCEDURE ps_modifier_compatibilite(
     p_id INT,

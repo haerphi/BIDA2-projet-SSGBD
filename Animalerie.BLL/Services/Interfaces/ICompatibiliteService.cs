@@ -7,5 +7,6 @@ namespace Animalerie.BLL.Services.Interfaces
         IEnumerable<Compatibilite> Lister();
         Compatibilite Consulter(int id);
         public void Modifier(Compatibilite compatibilite);
+        public Compatibilite Ajouter(Compatibilite compatibilite);
     }
 }
