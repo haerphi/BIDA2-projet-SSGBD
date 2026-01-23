@@ -1,0 +1,106 @@
+﻿<Page x:Class="Animalerie.WPF.Pages.Animal.AnimalDetailsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Animalerie.WPF.Pages.Animal"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="AnimalDetailsPage">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Détails de l'animal" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+
+        <Border Grid.Row="1" Background="#F0F0F0" Padding="15" CornerRadius="5" Margin="0,0,0,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Nom :" FontWeight="Bold" Margin="0,0,10,5"/>
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedAnimal.Nom}"/>
+
+                <TextBlock Grid.Row="0" Grid.Column="3" Text="Sexe :" FontWeight="Bold" Margin="0,0,10,5"/>
+                <TextBlock Grid.Row="0" Grid.Column="4" Text="{Binding SelectedAnimal.Sexe}"/>
+
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Type :" FontWeight="Bold" Margin="0,0,10,5"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedAnimal.Type}"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="3" Text="Couleur :" FontWeight="Bold" Margin="0,0,10,5"/>
+                <TextBlock Grid.Row="1" Grid.Column="4" Text="{Binding SelectedAnimal.Couleur}"/>
+
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="ID :" FontWeight="Bold" Margin="0,0,10,5"/>
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedAnimal.Id}"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="3" Text="Né(e) le :" FontWeight="Bold" Margin="0,0,10,5"/>
+                <TextBlock Grid.Row="2" Grid.Column="4" 
+                   Text="{Binding SelectedAnimal.DateNaissance, StringFormat=dd/MM/yyyy}"/>
+
+                <TextBlock Grid.Row="3" Grid.Column="0" Text="Status :" FontWeight="Bold" Margin="0,0,10,5"/>
+                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedAnimal.Status}"/>
+
+            </Grid>
+        </Border>
+
+        <GroupBox Grid.Row="2" Header="Description" Margin="0,0,0,20">
+            <TextBlock Text="{Binding SelectedAnimal.Description}" TextWrapping="Wrap" Padding="10"/>
+        </GroupBox>
+
+        <GroupBox Grid.Row="3" Header="Particularité" Margin="0,0,0,20">
+            <TextBlock Text="{Binding SelectedAnimal.Particularites}" TextWrapping="Wrap" Padding="10"/>
+
+        </GroupBox>
+
+        <GroupBox Grid.Row="4" Header="Compatibilités" Margin="0,0,0,20">
+            <StackPanel Orientation="Vertical" Margin="0,0,0,10">
+                <Button Content="Modifier Compatibilités" Command="{Binding EditCompatCommand}" Padding="10,5" Margin="0,0,10,10" />
+
+                <DataGrid ItemsSource="{Binding Compatibilites}" 
+                      AutoGenerateColumns="False" 
+                      IsReadOnly="True"
+                      HeadersVisibility="Column">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Type" Binding="{Binding Compatibilite.Type}" Width="*"/>
+                        <DataGridTextColumn Header="Valeur" Binding="{Binding Valeur}" Width="80"/>
+                        <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="2*"/>
+                        <DataGridTextColumn Header="Mis à jour" Binding="{Binding UpdatedAt, StringFormat=d}" Width="Auto"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </GroupBox>
+
+        <ItemsControl Grid.Row="5">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+
+            <!-- <Button Content="Lister Familles Accueil" Command="{Binding ListFamilleAccueilCommand}" Padding="10,5" Margin="0,0,10,10"/>
+            <Button Content="Demande d'adoption" Command="{Binding RequestAdoptionCommand}" Padding="10,5" Margin="0,0,10,10"/> -->
+        </ItemsControl>
+    </Grid>
+</Page>

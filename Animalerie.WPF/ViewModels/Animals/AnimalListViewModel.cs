@@ -71,6 +71,10 @@ namespace Animalerie.WPF.ViewModels.Animals
 
         // Commandes
         public ICommand ResetFiltersCommand { get; }
+        public ICommand ShowDetailsCommand { get; }
+
+        // Events
+        public event Action<string>? RequestNavigateToDetails;
 
         public AnimalListViewModel(IAnimalService animalService)
         {
@@ -82,6 +86,7 @@ namespace Animalerie.WPF.ViewModels.Animals
             StatusAvailable = Enum.GetValues(typeof(AnimalStatus)).Cast<AnimalStatus>();
 
             ResetFiltersCommand = new RelayCommand(_ => ResetFilters());
+            ShowDetailsCommand = new RelayCommand(param => OpenDetails(param));
 
             // Chargement initial
             LoadAnimals();
@@ -135,6 +140,14 @@ namespace Animalerie.WPF.ViewModels.Animals
             OnPropertyChanged(nameof(FilterStatus));
 
             LoadAnimals();
+        }
+
+        private void OpenDetails(object? param)
+        {
+            if(param is AnimalListingModel a)
+            {
+                RequestNavigateToDetails?.Invoke(a.Id);
+            }
         }
     }
 }

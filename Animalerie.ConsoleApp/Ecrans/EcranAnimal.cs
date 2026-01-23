@@ -409,7 +409,7 @@ namespace Animalerie.ConsoleApp.Ecrans
             IEnumerable<AniCompatibilite> aniCompatibilites = _animalService.ListCompatibilites(animal.Id);
             foreach (var aniComp in aniCompatibilites)
             {
-                Console.WriteLine($"\t- {aniComp.comp.Type}:  {aniComp.Valeur}, Description: {aniComp.Description}, UpdatedAt: {aniComp.UpdatedAt}");
+                Console.WriteLine($"\t- {aniComp.Compatibilite.Type}:  {aniComp.Valeur}, Description: {aniComp.Description}, UpdatedAt: {aniComp.UpdatedAt}");
             }
             Console.WriteLine(new string('-', 5));
             MenuDetails(animalId);
@@ -500,7 +500,7 @@ namespace Animalerie.ConsoleApp.Ecrans
             Console.WriteLine("Quels compatibilités souhaitez-vous modofier?");
             foreach (var comp in allCompatibilites)
             {
-                AniCompatibilite? aniComp = aniCompatibilites.FirstOrDefault(c => c.comp.Id == comp.Id);
+                AniCompatibilite? aniComp = aniCompatibilites.FirstOrDefault(c => c.Compatibilite.Id == comp.Id);
 
                 if (aniComp is not null)
                 {

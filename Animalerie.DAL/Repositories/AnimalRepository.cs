@@ -94,7 +94,7 @@ namespace Animalerie.DAL.Repositories
             _dbContext.Connection.ExecuteNonQuery("ps_modifier_compatibilite_animal", true, new
             {
                 p_ani_id = aniCompatibilite.AniId,
-                p_comp_id = aniCompatibilite.comp.Id,
+                p_comp_id = aniCompatibilite.Compatibilite.Id,
                 p_valeur = aniCompatibilite.Valeur,
                 p_description = aniCompatibilite.Description
             });

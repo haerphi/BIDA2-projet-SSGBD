@@ -2,7 +2,7 @@
 {
     public class AniCompatibilite
     {
-        public Compatibilite comp { get; set; }
+        public Compatibilite Compatibilite { get; set; } 
         public string AniId { get; set; }
         public bool Valeur { get; set; }
         public string? Description { get; set; }
@@ -12,7 +12,7 @@
         {
             Valeur = valeur;
             Description = description;
-            comp = compatibilite;
+            Compatibilite = compatibilite;
             AniId = aniId;
             UpdatedAt = updatedAt;
         }

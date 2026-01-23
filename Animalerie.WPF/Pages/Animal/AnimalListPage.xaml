@@ -68,6 +68,16 @@
                 <DataGridTextColumn Header="Sexe" Binding="{Binding Sexe}" Width="60"/>
                 <DataGridTextColumn Header="Date Naiss." Binding="{Binding DateNaissance, StringFormat=\{0:dd/MM/yyyy\}}" Width="130"/>
                 <DataGridTextColumn Header="Statut" Binding="{Binding Status, TargetNullValue='N/A'}" Width="*"/>
+                <DataGridTemplateColumn Header="Actions" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Détails"
+                                Command="{Binding DataContext.ShowDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                CommandParameter="{Binding}"
+                                Margin="5,0"/>      
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>
