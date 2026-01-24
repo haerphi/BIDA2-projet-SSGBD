@@ -38,15 +38,6 @@ namespace Animalerie.WPF.Mappers
             };
         }
 
-        public static CompatibiliteModel ToCompatibiliteModel(this Compatibilite a)
-        {
-            return new CompatibiliteModel
-            {
-                Id = a.Id,
-                Type = a.Type,
-            };
-        }
-
         public static AnimalCompatibiliteModel ToAnimalCompatibiliteModel(this AniCompatibilite ac)
         {
             return new AnimalCompatibiliteModel
@@ -56,6 +47,20 @@ namespace Animalerie.WPF.Mappers
                 Valeur = ac.Valeur,
                 Description = ac.Description,
                 UpdatedAt = ac.UpdatedAt,
+            };
+        }
+
+        public static FamilleAccueilModel ToFamilleAccueilModel(this FamilleAccueil fa)
+        {
+            return new FamilleAccueilModel
+            {
+                Id = fa.Id,
+                DateDebut = fa.DateDebut,
+                DateFin = fa.DateFin,
+                AniId = fa.AniId,
+                ContactId = fa.ContactId,
+                Animal = fa.Animal?.ToAnimalListingModel(),
+                Contact = fa.Contact?.ToContactModel(),
             };
         }
     }

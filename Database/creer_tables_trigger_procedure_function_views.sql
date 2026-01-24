@@ -84,7 +84,8 @@ CREATE TABLE ANI_ENTREE
     raison     raison_entree                   NOT NULL,
     date       TIMESTAMPTZ                     NOT NULL,
     ani_id     CHAR(11) REFERENCES ANIMAL (id) NOT NULL,
-    contact_id INT REFERENCES CONTACT (id)     NOT NULL
+    contact_id INT REFERENCES CONTACT (id)     NOT NULL,
+    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE ANI_SORTIE
@@ -93,7 +94,8 @@ CREATE TABLE ANI_SORTIE
     raison     raison_sortie                   NOT NULL,
     date       TIMESTAMPTZ                     NOT NULL,
     ani_id     CHAR(11) REFERENCES ANIMAL (id) NOT NULL,
-    contact_id INT REFERENCES CONTACT (id)     NOT NULL
+    contact_id INT REFERENCES CONTACT (id)     NOT NULL,
+    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE ADOPTION
@@ -496,6 +498,7 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE PROCEDURE ps_mettre_animal_en_famille_accueil(
     p_ani_id CHAR(11),
     p_famille_accueil_id INT,
+    p_date_debut TIMESTAMPTZ DEFAULT current_timestamp,
     p_date_fin TIMESTAMPTZ DEFAULT NULL
 ) AS
 $$
@@ -504,16 +507,16 @@ BEGIN
     IF EXISTS (SELECT 1
                FROM FAMILLE_ACCUEIL
                WHERE ani_id = p_ani_id
-                 AND (date_fin IS NULL OR date_fin >= CURRENT_DATE)) THEN
+                 AND (date_fin IS NULL OR date_fin >= p_date_debut)) THEN
         RAISE EXCEPTION 'Cet animal est dejà dans une famille d''accueil.';
     END IF;
 
     INSERT INTO FAMILLE_ACCUEIL (ani_id, famille_accueil_id, date_debut, date_fin)
-    VALUES (p_ani_id, p_famille_accueil_id, CURRENT_DATE, p_date_fin);
+    VALUES (p_ani_id, p_famille_accueil_id, p_date_debut, p_date_fin);
 
     -- sortie de l'animal
     INSERT INTO ANI_SORTIE (ani_id, contact_id, raison, date)
-    VALUES (p_ani_id, p_famille_accueil_id, 'famille_accueil', CURRENT_DATE);
+    VALUES (p_ani_id, p_famille_accueil_id, 'famille_accueil', p_date_debut);
 
     -- si date_fin est fournie, encoder la rentree de l'animal
     IF p_date_fin IS NOT NULL THEN
@@ -754,27 +757,51 @@ CREATE OR REPLACE FUNCTION fn_animal_status(
 ) RETURNS VARCHAR AS
 $$
 DECLARE
+    v_date_deces TIMESTAMPTZ;
     v_statut VARCHAR;
+    v_sortie_date TIMESTAMPTZ;
+    v_sortie_raison raison_sortie;
+    v_sortie_created_at TIMESTAMPTZ;
+    v_entree_date TIMESTAMPTZ;
+    v_entree_raison raison_entree;
+    v_entree_created_at TIMESTAMPTZ;
 BEGIN
-    SELECT CASE
-               WHEN a.date_deces IS NOT NULL
-                   THEN 'decede' || '|' || TO_CHAR(a.date_deces, 'DD/MM/YYYY')
-
-               WHEN NOT EXISTS (SELECT 1
-                                FROM ANI_SORTIE s
-                                WHERE s.ani_id = a.id AND s.date <= CURRENT_TIMESTAMP
-                                  AND s.date >= (SELECT MAX(e.date) FROM ANI_ENTREE e WHERE e.ani_id = a.id AND e.date <= CURRENT_TIMESTAMP))
-                   THEN 'present'
-
-               ELSE (SELECT s.raison || '|' || TO_CHAR(s.date, 'DD/MM/YYYY')
-                     FROM ANI_SORTIE s
-                     WHERE s.ani_id = a.id AND s.date <= CURRENT_TIMESTAMP
-                     ORDER BY s.date DESC
-                     LIMIT 1)
-               END
-    INTO v_statut
+    -- si l'animal est decede
+    SELECT a.date_deces
+    INTO v_date_deces
     FROM ANIMAL a
     WHERE a.id = p_ani_id;
+    IF v_date_deces IS NOT NULL THEN
+        v_statut := 'decede|' || TO_CHAR(v_date_deces, 'DD/MM/YYYY');
+        RETURN v_statut;
+    END IF;
+
+    -- Récupérer la date et la raison de la dernière sortie
+    SELECT s.date, s.raison, s.created_at
+    INTO v_sortie_date, v_sortie_raison, v_sortie_created_at
+    FROM ANI_SORTIE s
+    WHERE s.ani_id = p_ani_id AND s.date < CURRENT_TIMESTAMP
+    ORDER BY s.date DESC, created_at DESC
+    LIMIT 1;
+
+    -- Récupérer la date et la raison de la dernière entrée
+    SELECT e.date, e.raison, e.created_at
+    INTO v_entree_date, v_entree_raison, v_entree_created_at
+    FROM ANI_ENTREE e
+    WHERE e.ani_id = p_ani_id AND e.date < CURRENT_TIMESTAMP
+    ORDER BY e.date DESC, created_at DESC
+    LIMIT 1;
+
+    -- Déterminer le statut de l'animal
+    IF v_sortie_date IS NULL THEN
+        v_statut := 'present';
+    ELSIF v_entree_date IS NULL OR v_sortie_date > v_entree_date
+        OR (v_sortie_date = v_entree_date AND v_sortie_created_at > v_entree_created_at)
+        THEN
+        v_statut := v_sortie_raison || '|' || TO_CHAR(v_sortie_date, 'DD/MM/YYYY');
+    ELSE
+        v_statut := 'present';
+    END IF;
 
     RETURN v_statut; -- On retourne la variable
 END;

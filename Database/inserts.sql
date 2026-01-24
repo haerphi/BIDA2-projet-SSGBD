@@ -88,5 +88,6 @@ CALL ps_modifier_compatibilite_animal(
 
 CALL ps_mettre_animal_en_famille_accueil(
         '25122200000', -- p_ani_id
-        1 -- p_contact_id
+        1, -- p_contact_id
+        current_timestamp - interval '5 days'
      );

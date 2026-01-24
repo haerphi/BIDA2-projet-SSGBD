@@ -165,6 +165,7 @@ namespace Animalerie.DAL.Repositories
             {
                 p_ani_id = familleAccueil.AniId,
                 p_famille_accueil_id = familleAccueil.ContactId,
+                p_date_debut = familleAccueil.DateDebut,
                 p_date_fin = familleAccueil.DateFin
             });
         }

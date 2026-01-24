@@ -17,6 +17,7 @@ namespace Animalerie.WPF.Pages.Animal
             var vm = new AnimalDetailsViewModel(service, animalId);
 
             vm.RequestNavigateToEditCompat += OnRequestNavigateToEditCompat;
+            vm.RequestNavigateToPutInHostFamily += OnRequestNavigateToPutInHostFamily;
 
             this.DataContext = vm;
 
@@ -34,6 +35,11 @@ namespace Animalerie.WPF.Pages.Animal
         public void OnRequestNavigateToEditCompat(string animalId)
         {
             this.NavigationService.Navigate(new AnimalEditCompatPage(animalId));
+        }
+
+        public void OnRequestNavigateToPutInHostFamily(string animalId)
+        {
+            this.NavigationService.Navigate(new AnimalPutInHostFamilyPage(animalId));
         }
     }
 }

@@ -84,6 +84,8 @@ SELECT *
 FROM animal;
 SELECT *
 FROM ani_entree;
+SELECT *
+FROM ani_sortie;
 
 -- Supprimer un animal
 CALL ps_supprimer_animal(
@@ -117,6 +119,11 @@ WHERE ac.ani_id = '25122200000';
 SELECT *
 FROM vue_animaux;
 
+SELECT a.nom,
+       fn_animal_status(a.id) AS Status
+FROM ANIMAL a
+WHERE a.id = '25122200001';
+
 -- Lister les animaux présents au refuge
 SELECT *
 FROM vue_animaux
@@ -130,7 +137,7 @@ CALL ps_mettre_animal_en_famille_accueil(
 
 CALL ps_modifier_date_fin_famille_accueil(
         1, -- p_ani_id
-        current_timestamp -- p_date_fin
+        current_timestamp - interval '5 days' -- p_date_fin
      );
 
 -- Lister les familles d’accueil par où l’animal est passé
@@ -162,7 +169,7 @@ SELECT * FROM ani_sortie;
 CALL ps_ajouter_vaccination_animal(
         '25122200000', -- p_ani_id
         1, -- p_vaccin_id
-        current_timestamp -- p_date_vaccin
+        current_timestamp - interval '5 days' -- p_date_vaccin
      );
 
 CALL ps_ajouter_vaccination_animal(
