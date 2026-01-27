@@ -85,7 +85,7 @@ CREATE TABLE ANI_ENTREE
     date       TIMESTAMPTZ                     NOT NULL,
     ani_id     CHAR(11) REFERENCES ANIMAL (id) NOT NULL,
     contact_id INT REFERENCES CONTACT (id)     NOT NULL,
-    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE ANI_SORTIE
@@ -95,7 +95,7 @@ CREATE TABLE ANI_SORTIE
     date       TIMESTAMPTZ                     NOT NULL,
     ani_id     CHAR(11) REFERENCES ANIMAL (id) NOT NULL,
     contact_id INT REFERENCES CONTACT (id)     NOT NULL,
-    created_at  TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE ADOPTION
@@ -202,8 +202,10 @@ BEGIN
     IF EXISTS (SELECT 1
                FROM FAMILLE_ACCUEIL
                WHERE ani_id = NEW.ani_id
-                 AND date_fin IS NULL) THEN
-        RAISE EXCEPTION 'Cet animal est dejà dans une famille d''accueil active.';
+                 AND (
+                   TSTZRANGE(date_debut, date_fin, '[]') && TSTZRANGE(NEW.date_debut, NEW.date_fin, '[]')
+                   )) THEN
+        RAISE EXCEPTION 'Cet animal est déjà dans une famille d''accueil sur cette période.';
     END IF;
     RETURN NEW;
 END;
@@ -489,8 +491,8 @@ CREATE OR REPLACE PROCEDURE ps_modifier_compatibilite(
 $$
 BEGIN
     UPDATE COMPATIBILITE
-        SET type = p_type
-        WHERE id = p_id;
+    SET type = p_type
+    WHERE id = p_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -498,18 +500,12 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE PROCEDURE ps_mettre_animal_en_famille_accueil(
     p_ani_id CHAR(11),
     p_famille_accueil_id INT,
-    p_date_debut TIMESTAMPTZ DEFAULT current_timestamp,
+    p_date_debut TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     p_date_fin TIMESTAMPTZ DEFAULT NULL
 ) AS
 $$
 BEGIN
-    -- check si l'animal n'est pas dejà en famille d'accueil
-    IF EXISTS (SELECT 1
-               FROM FAMILLE_ACCUEIL
-               WHERE ani_id = p_ani_id
-                 AND (date_fin IS NULL OR date_fin >= p_date_debut)) THEN
-        RAISE EXCEPTION 'Cet animal est dejà dans une famille d''accueil.';
-    END IF;
+    -- check si l'animal n'est pas dejà en famille d'accueil se fait dans un trigger
 
     INSERT INTO FAMILLE_ACCUEIL (ani_id, famille_accueil_id, date_debut, date_fin)
     VALUES (p_ani_id, p_famille_accueil_id, p_date_debut, p_date_fin);
@@ -526,15 +522,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE PROCEDURE ps_modifier_date_fin_famille_accueil(
+CREATE OR REPLACE PROCEDURE ps_modifier_famille_accueil(
     p_accueil_id int,
-    p_date_fin TIMESTAMPTZ DEFAULT CURRENT_DATE
+    p_date_debut TIMESTAMPTZ,
+    p_date_fin TIMESTAMPTZ DEFAULT NULL
 ) AS
 $$
 DECLARE
-    v_ani_id   CHAR(11);
+    v_ani_id     CHAR(11);
     v_date_debut TIMESTAMPTZ;
-    v_date_fin TIMESTAMPTZ;
+    v_date_fin   TIMESTAMPTZ;
+    v_contact_id INT;
 BEGIN
     -- vérifier que l'accueil existe
     IF NOT EXISTS (SELECT 1
@@ -543,9 +541,9 @@ BEGIN
         RAISE EXCEPTION 'L''accueil avec l''ID % n''existe pas.', p_accueil_id;
     END IF;
 
-    -- Récupérer l'ani_id et la date de fin actuelle
-    SELECT ani_id, date_fin, date_debut
-    INTO v_ani_id, v_date_fin, v_date_debut
+    -- Récupérer différentes informations sur l'accueil
+    SELECT ani_id, date_fin, date_debut, famille_accueil_id
+    INTO v_ani_id, v_date_fin, v_date_debut, v_contact_id
     FROM FAMILLE_ACCUEIL
     WHERE id = p_accueil_id;
 
@@ -554,16 +552,17 @@ BEGIN
         RAISE EXCEPTION 'La date de fin ne peut pas être antérieure à la date de début de l''accueil.';
     END IF;
 
-    -- Mettre à jour la date de fin dans l'accueil
+    -- Mettre à jour les dates dans l'accueil
     UPDATE FAMILLE_ACCUEIL
-    SET date_fin = p_date_fin
+    SET date_debut = p_date_debut,
+        date_fin   = p_date_fin
     WHERE id = p_accueil_id;
 
     -- si la date de fin était NULL et qu'on fournit une date de fin, enregistrer la rentrée de l'animal
     IF v_date_fin IS NULL AND p_date_fin IS NOT NULL THEN
         -- Enregistrer la rentrée de l'animal
         INSERT INTO ANI_ENTREE (ani_id, contact_id, raison, date)
-        VALUES (v_ani_id, (SELECT famille_accueil_id FROM FAMILLE_ACCUEIL WHERE id = p_accueil_id),
+        VALUES (v_ani_id, v_contact_id,
                 'retour_famille_accueil', p_date_fin);
     END IF;
 
@@ -573,7 +572,7 @@ BEGIN
         DELETE
         FROM ANI_ENTREE
         WHERE ani_id = v_ani_id
-          AND contact_id = (SELECT famille_accueil_id FROM FAMILLE_ACCUEIL WHERE id = p_accueil_id)
+          AND contact_id = v_contact_id
           AND raison = 'retour_famille_accueil'
           AND date = v_date_fin;
 
@@ -581,10 +580,19 @@ BEGIN
         IF p_date_fin IS NOT NULL THEN
             -- Insérer la nouvelle entrée avec la date mise à jour
             INSERT INTO ANI_ENTREE (ani_id, contact_id, raison, date)
-            VALUES (v_ani_id, (SELECT famille_accueil_id FROM FAMILLE_ACCUEIL WHERE id = p_accueil_id),
+            VALUES (v_ani_id, v_contact_id,
                     'retour_famille_accueil', p_date_fin);
         END IF;
     END IF;
+
+    -- update de la date de sortie dans ANI_SORTIE
+    UPDATE ANI_SORTIE
+    SET date = p_date_debut
+    WHERE ani_id = v_ani_id
+      AND contact_id = v_contact_id
+      AND raison = 'famille_accueil'
+      AND date = v_date_debut;
+
 END;
 $$ LANGUAGE plpgsql;
 
@@ -676,20 +684,20 @@ BEGIN
     THEN
 
         RAISE EXCEPTION 'Impossible de creer une adoption : l''animal n''est pas actuellement disponible pour adoption.';
-     END IF;
+    END IF;
 
     -- check s'il y a deja une demande par ce contact qui est avec le status "demande"
     IF EXISTS(SELECT 1
-                FROM ADOPTION WHERE adoptant_id = p_adoptant_id AND
-                                  ani_id = p_ani_id AND
-                                  statut = 'demande'
-            )
+              FROM ADOPTION
+              WHERE adoptant_id = p_adoptant_id
+                AND ani_id = p_ani_id
+                AND statut = 'demande')
     THEN
         RAISE EXCEPTION 'Ce contact a déjà une demande en attente pour cet animal';
     END IF;
 
     INSERT INTO ADOPTION (ani_id, adoptant_id, statut, date_demande, note)
-        VALUES (p_ani_id, p_adoptant_id, 'demande', CURRENT_DATE, p_note);
+    VALUES (p_ani_id, p_adoptant_id, 'demande', CURRENT_DATE, p_note);
 END;
 $$ LANGUAGE plpgsql;
 
@@ -702,7 +710,8 @@ CREATE OR REPLACE PROCEDURE ps_modifier_adoption(
 $$
 BEGIN
     UPDATE ADOPTION
-    SET statut = p_nouveau_statut, note = p_note
+    SET statut = p_nouveau_statut,
+        note   = p_note
     WHERE id = p_adoption_id;
 
     -- Si l'adoption est acceptee, enregistrer la sortie de l'animal
@@ -757,13 +766,13 @@ CREATE OR REPLACE FUNCTION fn_animal_status(
 ) RETURNS VARCHAR AS
 $$
 DECLARE
-    v_date_deces TIMESTAMPTZ;
-    v_statut VARCHAR;
-    v_sortie_date TIMESTAMPTZ;
-    v_sortie_raison raison_sortie;
+    v_date_deces        TIMESTAMPTZ;
+    v_statut            VARCHAR;
+    v_sortie_date       TIMESTAMPTZ;
+    v_sortie_raison     raison_sortie;
     v_sortie_created_at TIMESTAMPTZ;
-    v_entree_date TIMESTAMPTZ;
-    v_entree_raison raison_entree;
+    v_entree_date       TIMESTAMPTZ;
+    v_entree_raison     raison_entree;
     v_entree_created_at TIMESTAMPTZ;
 BEGIN
     -- si l'animal est decede
@@ -780,7 +789,8 @@ BEGIN
     SELECT s.date, s.raison, s.created_at
     INTO v_sortie_date, v_sortie_raison, v_sortie_created_at
     FROM ANI_SORTIE s
-    WHERE s.ani_id = p_ani_id AND s.date < CURRENT_TIMESTAMP
+    WHERE s.ani_id = p_ani_id
+      AND s.date < CURRENT_TIMESTAMP
     ORDER BY s.date DESC, created_at DESC
     LIMIT 1;
 
@@ -788,7 +798,8 @@ BEGIN
     SELECT e.date, e.raison, e.created_at
     INTO v_entree_date, v_entree_raison, v_entree_created_at
     FROM ANI_ENTREE e
-    WHERE e.ani_id = p_ani_id AND e.date < CURRENT_TIMESTAMP
+    WHERE e.ani_id = p_ani_id
+      AND e.date < CURRENT_TIMESTAMP
     ORDER BY e.date DESC, created_at DESC
     LIMIT 1;
 
@@ -797,7 +808,7 @@ BEGIN
         v_statut := 'present';
     ELSIF v_entree_date IS NULL OR v_sortie_date > v_entree_date
         OR (v_sortie_date = v_entree_date AND v_sortie_created_at > v_entree_created_at)
-        THEN
+    THEN
         v_statut := v_sortie_raison || '|' || TO_CHAR(v_sortie_date, 'DD/MM/YYYY');
     ELSE
         v_statut := 'present';

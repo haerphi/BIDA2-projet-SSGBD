@@ -70,6 +70,16 @@ namespace Animalerie.BLL.Services
             return _animalRepository.ListerFamillesAccueil(animalId, includeContact, offset, limit);
         }
 
+        public FamilleAccueil ConsulterFamilelAccueil(int familleid)
+        {
+            FamilleAccueil? fa = _animalRepository.ConsulterFamilelAccueil(familleid);
+            if (fa is null)
+            {
+                throw new NotFoundException();
+            }
+            return fa;
+        }
+
         public FamilleAccueil? FamilleAccueilActuelle(string animalId, bool includeContact)
         {
             return _animalRepository.FamilleAccueilActuelle(animalId, includeContact);
@@ -98,12 +108,15 @@ namespace Animalerie.BLL.Services
             }
         }
 
-        public void ModifierDateFinFamilleAccueil(int accueilId, DateTime? dateFin = null)
+        public void ModifierFamilleAccueil(FamilleAccueil familleAccueil)
         {
-            // TODO Récupérer l'entrée de famille d'accueil pour validation avant modification
-            FamilleAccueil familleAccueil = new FamilleAccueil(accueilId, DateTime.MinValue, dateFin, string.Empty, 0);
+            FamilleAccueil fa = ConsulterFamilelAccueil(familleAccueil.Id);
+            
+            fa.ContactId = familleAccueil.ContactId;
+            fa.DateDebut = familleAccueil.DateDebut;
+            fa.DateFin = familleAccueil.DateFin;
 
-            _animalRepository.ModifierDateFinFamilleAccueil(familleAccueil);
+            _animalRepository.ModifierFamilleAccueil(fa);
         }
 
         public IEnumerable<Adoption> ListerAdoptions(string animalId, bool includeContact = false, int offset = 0, int limit = 20)

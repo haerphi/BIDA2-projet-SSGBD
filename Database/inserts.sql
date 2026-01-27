@@ -78,6 +78,14 @@ CALL ps_ajouter_animal(
         '2023-05-15', -- p_date_naissance
         ARRAY ['Noir', 'Rouge'] -- p_couleurs (tableau de VARCHAR)
      );
+-- Post-date des animaux 2~3 semaines dans le passé
+UPDATE ani_entree
+SET date = current_timestamp - interval '20 days'
+WHERE ani_id ='25122200000';
+
+UPDATE ani_entree
+SET date = current_timestamp - interval '15 days'
+WHERE ani_id ='25122200001';
 
 CALL ps_modifier_compatibilite_animal(
         '25122200000',

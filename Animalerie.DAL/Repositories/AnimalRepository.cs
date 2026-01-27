@@ -118,7 +118,7 @@ namespace Animalerie.DAL.Repositories
         public IEnumerable<FamilleAccueil> ListerFamillesAccueil(string animalId, bool includeContact = false, int offset = 0, int limit = 20)
         {
             List<FamilleAccueil> familleAccueils = _dbContext.Connection.ExecuteReader<FamilleAccueil>(
-                "SELECT * FROM fn_lister_familles_accueil_animal(@p_animal_id) ORDER BY date_fin DESC LIMIT @p_limit OFFSET @p_offset",
+                "SELECT * FROM fn_lister_familles_accueil_animal(@p_animal_id) ORDER BY date_debut DESC LIMIT @p_limit OFFSET @p_offset",
                 (r) => r.ToFamilleAccueil(),
                 false,
                 new
@@ -143,9 +143,26 @@ namespace Animalerie.DAL.Repositories
             return familleAccueils;
         }
 
+        public FamilleAccueil? ConsulterFamilelAccueil(int familleid)
+        {
+            FamilleAccueil? fa = _dbContext.Connection.ExecuteReader<FamilleAccueil>(
+                "SELECT * FROM FAMILLE_ACCUEIL WHERE id=@p_familleId",
+                (r) => r.ToFamilleAccueil(),
+                false,
+                new { p_familleId = familleid }
+                ).FirstOrDefault();
+
+            if (fa is not null)
+            {
+                fa.Contact = _contactRepository.Consulter(fa.ContactId);
+                fa.Animal = Consulter(fa.AniId);
+            }
+            return fa;
+        }
+
         public FamilleAccueil? FamilleAccueilActuelle(string animalId, bool includeContact)
         {
-            FamilleAccueil? fa =  _dbContext.Connection.ExecuteReader<FamilleAccueil>(
+            FamilleAccueil? fa = _dbContext.Connection.ExecuteReader<FamilleAccueil>(
                 "SELECT * FROM fn_lister_familles_accueil_animal(@p_animal_id) WHERE date_fin IS NULL OR date_fin > CURRENT_TIMESTAMP",
                 (r) => r.ToFamilleAccueil(),
                 false,
@@ -170,11 +187,12 @@ namespace Animalerie.DAL.Repositories
             });
         }
 
-        public void ModifierDateFinFamilleAccueil(FamilleAccueil familleAccueil)
+        public void ModifierFamilleAccueil(FamilleAccueil familleAccueil)
         {
-            _dbContext.Connection.ExecuteNonQuery("ps_modifier_date_fin_famille_accueil", true, new
+            _dbContext.Connection.ExecuteNonQuery("ps_modifier_famille_accueil", true, new
             {
                 p_accueil_id = familleAccueil.Id,
+                p_date_debut = familleAccueil.DateDebut,
                 p_date_fin = familleAccueil.DateFin
             });
         }

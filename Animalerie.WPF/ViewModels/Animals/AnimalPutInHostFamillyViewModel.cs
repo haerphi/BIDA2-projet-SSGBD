@@ -13,6 +13,8 @@ namespace Animalerie.WPF.ViewModels.Animals
     {
         private readonly IAnimalService _animalService;
         private readonly IContactService _contactService;
+
+        private readonly FamilleAccueil? _familleAccueil; // null si création, remplis en mode édition
         private readonly string _animalId;
 
         private Animal? _selectedAnimal;
@@ -52,9 +54,8 @@ namespace Animalerie.WPF.ViewModels.Animals
 
         public event Action RequestClose;
 
-        public AnimalPutInHostFamilyViewModel(string animalId, IAnimalService animalService, IContactService contactService)
+        private AnimalPutInHostFamilyViewModel(IAnimalService animalService, IContactService contactService)
         {
-            _animalId = animalId;
             _animalService = animalService;
             _contactService = contactService;
 
@@ -63,19 +64,52 @@ namespace Animalerie.WPF.ViewModels.Animals
                 canExecute: _ => SelectedContact != null && SelectedAnimal != null
             );
             CancelCommand = new RelayCommand(_ => RequestClose?.Invoke());
+        }
+
+        // Constructeur en mode création
+        public AnimalPutInHostFamilyViewModel(string animalId, IAnimalService animalService, IContactService contactService)
+            : this(animalService, contactService)
+        {
+            _animalId = animalId;
+            _familleAccueil = null;
 
             ResetForm();
         }
 
+        // Constructeur en mode édition
+        public AnimalPutInHostFamilyViewModel(int familleAccueilId, IAnimalService animalService, IContactService contactService)
+            : this(animalService, contactService)
+        {
+            _familleAccueil = _animalService.ConsulterFamilelAccueil(familleAccueilId);
+
+            if (_familleAccueil == null)
+                throw new ArgumentException("Famille d'accueil introuvable");
+
+            _animalId = _familleAccueil.AniId;
+        }
+
         public void LoadData()
         {
-            _selectedAnimal = _animalService.Consulter(_animalId);
-            OnPropertyChanged(nameof(SelectedAnimal));
+            SelectedAnimal = _animalService.Consulter(_animalId);
 
             ContactsList.Clear();
             foreach (Contact contact in _contactService.Lister())
             {
                 ContactsList.Add(contact.ToContactModel());
+            }
+
+            // Si mode édition, récupérer les données existantes
+            if (_familleAccueil != null)
+            {
+                DateStart = _familleAccueil.DateDebut;
+                DateEnd = _familleAccueil.DateFin;
+                SelectedContact = ContactsList.FirstOrDefault(c => c.Id == _familleAccueil.ContactId);
+
+                IsDirty = false;
+            }
+            else
+            {
+                ResetForm();
             }
         }
 
@@ -85,9 +119,21 @@ namespace Animalerie.WPF.ViewModels.Animals
             {
                 try
                 {
-                    _animalService.MettreEnFamilleAccueil(_animalId, SelectedContact.Id, DateStart, DateEnd);
+                   // mode création
+                    if (_familleAccueil == null)
+                    {
+                        _animalService.MettreEnFamilleAccueil(_animalId, SelectedContact.Id, DateStart, DateEnd);
+                    }
+                    else
+                    {
+                        _familleAccueil.ContactId = SelectedContact.Id;
+                        _familleAccueil.DateDebut = DateStart;
+                        _familleAccueil.DateFin = DateEnd;
+                        // mode édition
+                        _animalService.ModifierFamilleAccueil(_familleAccueil);
+                    }
 
-                    MessageBox.Show("Mise en place effectuée avec succès !");
+                    MessageBox.Show("Sauvegarde effectuée avec succès !");
                     IsDirty = false;
                     RequestClose?.Invoke();
                 }

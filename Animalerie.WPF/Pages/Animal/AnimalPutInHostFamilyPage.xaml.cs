@@ -42,6 +42,24 @@ namespace Animalerie.WPF.Pages.Animal
             this.DataContext = vm;
         }
 
+        public AnimalPutInHostFamilyPage(int familleAccueilId)
+        {
+            InitializeComponent();
+
+            var animalService = App.ServiceProvider.GetRequiredService<IAnimalService>();
+            var contactService = App.ServiceProvider.GetRequiredService<IContactService>();
+
+            var vm = new AnimalPutInHostFamilyViewModel(familleAccueilId, animalService, contactService);
+
+            vm.RequestClose += () =>
+            {
+                if (this.NavigationService.CanGoBack)
+                    this.NavigationService.GoBack();
+            };
+
+            this.DataContext = vm;
+        }
+
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             if (this.DataContext is AnimalPutInHostFamilyViewModel vm)

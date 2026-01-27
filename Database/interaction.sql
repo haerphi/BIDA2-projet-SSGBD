@@ -93,7 +93,8 @@ CALL ps_supprimer_animal(
      );
 
 -- Lister les compatibilités
-SELECT * FROM compatibilite;
+SELECT *
+FROM compatibilite;
 
 -- Ajouter/Modifier une compatibilité sur un animal
 CALL ps_modifier_compatibilite_animal(
@@ -122,12 +123,12 @@ FROM vue_animaux;
 SELECT a.nom,
        fn_animal_status(a.id) AS Status
 FROM ANIMAL a
-WHERE a.id = '25122200001';
+WHERE a.id = '25122200000';
 
 -- Lister les animaux présents au refuge
 SELECT *
 FROM vue_animaux
-    WHERE status = 'present';
+WHERE status = 'present';
 
 -- Ajouter une nouvelle famille d’accueil à un animal (la date d’arrivée et la personne de contact sont obligatoires)
 CALL ps_mettre_animal_en_famille_accueil(
@@ -135,10 +136,14 @@ CALL ps_mettre_animal_en_famille_accueil(
         1 -- p_contact_id
      );
 
-CALL ps_modifier_date_fin_famille_accueil(
+CALL ps_modifier_famille_accueil(
         1, -- p_ani_id
-        current_timestamp - interval '5 days' -- p_date_fin
+        CURRENT_TIMESTAMP - INTERVAL '5 days' -- p_date_fin
      );
+
+-- Liste toutes les familles d’accueil
+SELECT *
+FROM famille_accueil;
 
 -- Lister les familles d’accueil par où l’animal est passé
 SELECT *
@@ -162,14 +167,16 @@ CALL ps_modifier_adoption(
      );
 
 -- Lister les adoptions et leur statut
-SELECT * FROM adoption;
-SELECT * FROM ani_sortie;
+SELECT *
+FROM adoption;
+SELECT *
+FROM ani_sortie;
 
 -- Ajouter un vaccin (date du vaccin, nom du vaccin, fait ou non fait) à un animal
 CALL ps_ajouter_vaccination_animal(
         '25122200000', -- p_ani_id
         1, -- p_vaccin_id
-        current_timestamp - interval '5 days' -- p_date_vaccin
+        CURRENT_TIMESTAMP - INTERVAL '5 days' -- p_date_vaccin
      );
 
 CALL ps_ajouter_vaccination_animal(
@@ -185,7 +192,8 @@ CALL ps_supprimer_vaccination_animal(
      );
 
 -- Lister les vaccins
-SELECT * FROM vaccin;
+SELECT *
+FROM vaccin;
 
 -- Lister les vaccinations d’un animal
 SELECT *
@@ -194,3 +202,16 @@ WHERE ani_id = '25122200000';
 
 -- Ajouter compatibilite
 CALL ps_ajouter_compatibilite('Canape');
+
+
+
+CALL ps_mettre_animal_en_famille_accueil('25122200000', 1,
+                                         CURRENT_TIMESTAMP - INTERVAL '100 days',
+                                         CURRENT_TIMESTAMP - INTERVAL '90 days');
+
+SELECT *
+FROM FAMILLE_ACCUEIL
+WHERE ani_id = '25122200000'
+  AND (
+    tstzrange(date_debut, date_fin, '[]') && tstzrange(CURRENT_TIMESTAMP - INTERVAL '100 days', CURRENT_TIMESTAMP - INTERVAL '90 days', '[]')
+    )
