@@ -526,15 +526,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE PROCEDURE ps_modifier_date_fin_famille_accueil(
+-- TODO REFACTO CETTE PROCÉDURE
+CREATE OR REPLACE PROCEDURE ps_modifier_famille_accueil(
     p_accueil_id int,
-    p_date_fin TIMESTAMPTZ DEFAULT CURRENT_DATE
+    p_date_debut TIMESTAMPTZ,
+    p_date_fin TIMESTAMPTZ DEFAULT NULL
 ) AS
 $$
 DECLARE
     v_ani_id   CHAR(11);
     v_date_debut TIMESTAMPTZ;
     v_date_fin TIMESTAMPTZ;
+    v_contact_id INT;
 BEGIN
     -- vérifier que l'accueil existe
     IF NOT EXISTS (SELECT 1
@@ -544,8 +547,8 @@ BEGIN
     END IF;
 
     -- Récupérer l'ani_id et la date de fin actuelle
-    SELECT ani_id, date_fin, date_debut
-    INTO v_ani_id, v_date_fin, v_date_debut
+    SELECT ani_id, date_fin, date_debut, famille_accueil_id
+    INTO v_ani_id, v_date_fin, v_date_debut, v_contact_id
     FROM FAMILLE_ACCUEIL
     WHERE id = p_accueil_id;
 
@@ -563,7 +566,7 @@ BEGIN
     IF v_date_fin IS NULL AND p_date_fin IS NOT NULL THEN
         -- Enregistrer la rentrée de l'animal
         INSERT INTO ANI_ENTREE (ani_id, contact_id, raison, date)
-        VALUES (v_ani_id, (SELECT famille_accueil_id FROM FAMILLE_ACCUEIL WHERE id = p_accueil_id),
+        VALUES (v_ani_id, v_contact_id,
                 'retour_famille_accueil', p_date_fin);
     END IF;
 
@@ -573,7 +576,7 @@ BEGIN
         DELETE
         FROM ANI_ENTREE
         WHERE ani_id = v_ani_id
-          AND contact_id = (SELECT famille_accueil_id FROM FAMILLE_ACCUEIL WHERE id = p_accueil_id)
+          AND contact_id = v_contact_id
           AND raison = 'retour_famille_accueil'
           AND date = v_date_fin;
 
@@ -581,7 +584,7 @@ BEGIN
         IF p_date_fin IS NOT NULL THEN
             -- Insérer la nouvelle entrée avec la date mise à jour
             INSERT INTO ANI_ENTREE (ani_id, contact_id, raison, date)
-            VALUES (v_ani_id, (SELECT famille_accueil_id FROM FAMILLE_ACCUEIL WHERE id = p_accueil_id),
+            VALUES (v_ani_id, v_contact_id,
                     'retour_famille_accueil', p_date_fin);
         END IF;
     END IF;

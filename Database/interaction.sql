@@ -135,7 +135,7 @@ CALL ps_mettre_animal_en_famille_accueil(
         1 -- p_contact_id
      );
 
-CALL ps_modifier_date_fin_famille_accueil(
+CALL ps_modifier_famille_accueil(
         1, -- p_ani_id
         current_timestamp - interval '5 days' -- p_date_fin
      );
