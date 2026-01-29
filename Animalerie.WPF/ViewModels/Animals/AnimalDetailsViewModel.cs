@@ -27,11 +27,13 @@ namespace Animalerie.WPF.ViewModels.Animals
         public ICommand EditCompatCommand { get; }
         public ICommand PutInHostfamilyCommand { get; }
         public ICommand EditFamilleAccueilCommand { get; }
+        public ICommand CreateAdoptionDemandCommand { get; }
 
         // Events
         public event Action<string> RequestNavigateToEditCompat;
         public event Action<string> RequestNavigateToPutInHostFamily;
         public event Action<int> RequestNavigateToEditHostFamily;
+        public event Action<string> RequestNavigateToAdoptionForm;
 
         public AnimalDetailsViewModel(IAnimalService animalService, string animalId)
         {
@@ -41,6 +43,7 @@ namespace Animalerie.WPF.ViewModels.Animals
             EditCompatCommand = new RelayCommand(_ => EditCompat());
             PutInHostfamilyCommand = new RelayCommand(_ => PutInHostfamily());
             EditFamilleAccueilCommand = new RelayCommand(param => EditFamilleAccueil(param));
+            CreateAdoptionDemandCommand = new RelayCommand(_ => CreateAdoptionDemand());
 
             // l'appel de LoadData() est appelé depuis la page lors du chargement
         }
@@ -84,6 +87,11 @@ namespace Animalerie.WPF.ViewModels.Animals
             {
                 RequestNavigateToEditHostFamily?.Invoke(fa.Id);
             }
+        }
+
+        private void CreateAdoptionDemand()
+        {
+            RequestNavigateToAdoptionForm?.Invoke(_animalId);
         }
     }
 }
