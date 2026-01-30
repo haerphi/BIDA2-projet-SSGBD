@@ -843,6 +843,25 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION fn_lister_roles_contact_table(
+    p_contact_id INT
+)
+    RETURNS TABLE
+            (
+                rol_id INT,
+                nom    role_nom
+            )
+AS
+$$
+BEGIN
+    RETURN QUERY
+        SELECT r.id,
+               r.nom
+        FROM PERSONNE_ROLE pr
+                 JOIN ROLE r ON pr.rol_id = r.id
+        WHERE pr.pers_id = p_contact_id;
+END
+$$ LANGUAGE plpgsql;
 -- ===========================================================================================================================================================
 -- VIEWS
 

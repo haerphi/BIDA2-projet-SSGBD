@@ -915,9 +915,9 @@ namespace Animalerie.ConsoleApp.Ecrans
 
                         try
                         {
-                            _animalService.ModifierDateFamilleAccueil(
-                                accueilId: currentAccueil.Id,
-                                dateFin: inputDateFin
+                            currentAccueil.DateFin = inputDateFin;
+                            _animalService.ModifierFamilleAccueil(
+                                currentAccueil
                             );
                         }
                         catch (Exception ex)

@@ -32,8 +32,8 @@
             <Separator Background="#34495E" Margin="10"/>
             <Button Content="Gérer les compatibilités" Click="BtnCompatibilites_Click" Style="{StaticResource MenuButtonStyle}" />
             <Separator Background="#34495E" Margin="10"/>
-            <!--<Button Content="Liste Contacts" Click="BtnContacts_Click" Style="{StaticResource MenuButtonStyle}"/>
-            <Button Content="Ajouter Contact" Click="BtnAjoutContact_Click" Style="{StaticResource MenuButtonStyle}"/>`-->
+            <Button Content="Liste Contacts" Click="BtnContacts_Click" Style="{StaticResource MenuButtonStyle}"/>
+            <!--<Button Content="Ajouter Contact" Click="BtnAjoutContact_Click" Style="{StaticResource MenuButtonStyle}"/>`-->
         </StackPanel>
 
         <Frame x:Name="MainFrame" Grid.Column="1" NavigationUIVisibility="Hidden"/>

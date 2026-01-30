@@ -148,7 +148,7 @@ namespace Animalerie.WPF.ViewModels.Animals
             _filterStatus = null;
             _filterHasAdoptionRequest = "Tous";
 
-            //// notifie la vue que tout a changé
+            // notifie la vue que tout a changé
             OnPropertyChanged(nameof(FilterNom));
             OnPropertyChanged(nameof(FilterType));
             OnPropertyChanged(nameof(FilterSexe));

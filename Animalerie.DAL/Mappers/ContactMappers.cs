@@ -20,5 +20,14 @@ namespace Animalerie.DAL.Mappers
                 record["email"] == DBNull.Value ? null : (string)record["email"]
             );
         }
+
+        internal static PersonneRole ToPersonneRole(this IDataRecord record)
+        {
+            return new PersonneRole
+            {
+                PersId = (int)record["pers_id"],
+                RolId = (int)record["rol_id"],
+            };
+        }
     }
 }

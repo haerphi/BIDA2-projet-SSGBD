@@ -64,5 +64,10 @@ namespace Animalerie.WPF
         {
             MainFrame.Navigate(new CompatibilitePage());
         }
+
+        private void BtnContacts_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new ContactListPage());
+        }
     }
 }

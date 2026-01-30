@@ -1,6 +1,7 @@
 ﻿using Animalerie.BLL.Services.Interfaces;
 using Animalerie.DAL.Repositories.Interfaces;
 using Animalerie.Domain.Models;
+using Animalerie.Domain.Models.Listing;
 
 namespace Animalerie.BLL.Services
 {
@@ -13,9 +14,9 @@ namespace Animalerie.BLL.Services
             _contactRepository = contactRepository;
         }
 
-        public Contact Consulter(int id)
+        public Contact Consulter(int id, bool includeRole = false)
         {
-            Contact? contact = _contactRepository.Consulter(id);
+            Contact? contact = _contactRepository.Consulter(id, includeRole);
             if (contact == null)
             {
                 // TODO Custom Exception
@@ -25,9 +26,9 @@ namespace Animalerie.BLL.Services
             return contact;
         }
 
-        public IEnumerable<Contact> Lister()
+        public IEnumerable<Contact> Lister(ContactFilters? filters = null, bool includeRole = false)
         {
-            return _contactRepository.Lister();
+            return _contactRepository.Lister(filters, includeRole);
         }
     }
 }

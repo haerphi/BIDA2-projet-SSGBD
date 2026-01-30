@@ -13,6 +13,7 @@
         public string? Gsm { get; set; }
         public string? Telephone { get; set; }
         public string? Email { get; set; }
+        public List<PersonneRole> Roles { get; set; } = new();
 
         public Contact(int id, string nom, string prenom, string? rue, string? cp, string? localite, string registreNational, string? gsm, string? telephone, string? email)
         {
