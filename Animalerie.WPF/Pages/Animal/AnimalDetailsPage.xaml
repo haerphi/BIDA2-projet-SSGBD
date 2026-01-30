@@ -17,6 +17,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <TextBlock Text="Détails de l'animal" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
@@ -107,9 +108,9 @@
 
 
                         <DataGrid ItemsSource="{Binding FamilleAccueils}" 
-              AutoGenerateColumns="False" 
-              IsReadOnly="True"
-              HeadersVisibility="Column">
+                              AutoGenerateColumns="False" 
+                              IsReadOnly="True"
+                              HeadersVisibility="Column">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Contact" Binding="{Binding Contact.NomComplet}" Width="*"/>
                                 <DataGridTextColumn Header="Debut" Binding="{Binding DateDebut, StringFormat=d}" Width="*"/>
@@ -129,9 +130,32 @@
                     </StackPanel>
                 </GroupBox>
 
+                <GroupBox Grid.Row="4" Header="Demandes d'adoption" Margin="0,0,0,20">
+                    <StackPanel Orientation="Vertical" Margin="0,0,0,10">
+                        <Button Content="Faire une demande d'adoption" Command="{Binding CreateAdoptionDemandCommand}" Width="auto" Padding="10,5" Margin="0,0,10,10" HorizontalAlignment="Left" />
 
-                <!--
-            <Button Content="Demande d'adoption" Command="{Binding RequestAdoptionCommand}" Padding="10,5" Margin="0,0,10,10"/> -->
+                        <DataGrid ItemsSource="{Binding Adoptions}" 
+                            AutoGenerateColumns="False" 
+                            IsReadOnly="True"
+                            HeadersVisibility="Column">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Contact" Binding="{Binding Contact.NomComplet}" Width="*"/>
+                                <DataGridTextColumn Header="Status" Binding="{Binding Statut}" Width="*"/>
+                                <DataGridTextColumn Header="Fais le" Binding="{Binding DateDemande, StringFormat=\{0:dd.MM.yy HH:mm:ss\}}" Width="*"/>
+                                <DataGridTemplateColumn Header="Actions" Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="Modifier"
+                                              Command="{Binding DataContext.UpdateAdoptionDemandCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                              CommandParameter="{Binding}"
+                                              Margin="5,0"/>        
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </GroupBox>
             </ItemsControl>
         </Grid>
     </ScrollViewer>

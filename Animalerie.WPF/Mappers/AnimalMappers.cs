@@ -63,5 +63,20 @@ namespace Animalerie.WPF.Mappers
                 Contact = fa.Contact?.ToContactModel(),
             };
         }
+
+        public static AdoptionModel ToAdoptionModel(this Adoption ad)
+        {
+            return new AdoptionModel
+            {
+                Id = ad.Id,
+                Statut = ad.Statut,
+                DateDemande = ad.DateDemande,
+                Note = ad.Note,
+                AniId = ad.AniId,
+                ContactId = ad.ContactId,
+                Animal = ad.Animal?.ToAnimalListingModel(),
+                Contact = ad.Contact?.ToContactModel(),
+            };
+        }
     }
 }

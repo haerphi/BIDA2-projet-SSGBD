@@ -172,6 +172,12 @@ FROM adoption;
 SELECT *
 FROM ani_sortie;
 
+SELECT a.*
+FROM vue_animaux a
+    LEFT JOIN ADOPTION ad ON a.id = ad.ani_id
+WHERE a.deleted_at IS NULL
+  AND a.status NOT LIKE 'adoption|%';
+
 -- Ajouter un vaccin (date du vaccin, nom du vaccin, fait ou non fait) à un animal
 CALL ps_ajouter_vaccination_animal(
         '25122200000', -- p_ani_id
@@ -202,16 +208,3 @@ WHERE ani_id = '25122200000';
 
 -- Ajouter compatibilite
 CALL ps_ajouter_compatibilite('Canape');
-
-
-
-CALL ps_mettre_animal_en_famille_accueil('25122200000', 1,
-                                         CURRENT_TIMESTAMP - INTERVAL '100 days',
-                                         CURRENT_TIMESTAMP - INTERVAL '90 days');
-
-SELECT *
-FROM FAMILLE_ACCUEIL
-WHERE ani_id = '25122200000'
-  AND (
-    tstzrange(date_debut, date_fin, '[]') && tstzrange(CURRENT_TIMESTAMP - INTERVAL '100 days', CURRENT_TIMESTAMP - INTERVAL '90 days', '[]')
-    )

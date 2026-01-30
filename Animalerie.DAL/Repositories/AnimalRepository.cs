@@ -73,6 +73,18 @@ namespace Animalerie.DAL.Repositories
                 {
                     query += " AND status LIKE @p_statut || '%'";
                 }
+
+                if (filters.HasAdoptionRequest is not null)
+                {
+                    if (filters.HasAdoptionRequest.Value)
+                    {
+                        query += " AND EXISTS (SELECT 1 FROM adoption WHERE ani_id = vue_animaux.id)";
+                    }
+                    else
+                    {
+                        query += " AND NOT EXISTS (SELECT 1 FROM adoption WHERE ani_id = vue_animaux.id)";
+                    }
+                }
             }
 
             query += " ORDER BY id LIMIT @p_limit OFFSET @p_offset";

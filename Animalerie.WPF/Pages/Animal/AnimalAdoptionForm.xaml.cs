@@ -57,6 +57,26 @@ namespace Animalerie.WPF.Pages.Animal
 
         }
 
+        public AnimalAdoptionForm(int adoptionId)
+        {
+            InitializeComponent();
+            var animalService = App.ServiceProvider.GetRequiredService<IAnimalService>();
+            var contactService = App.ServiceProvider.GetRequiredService<IContactService>();
+            var adoptionService = App.ServiceProvider.GetRequiredService<IAdoptionService>();
+
+            var vm = new AnimalAdoptionFormViewModel(animalService, contactService, adoptionService, adoptionId);
+
+            vm.RequestClose += () =>
+            {
+                if (this.NavigationService.CanGoBack)
+                    this.NavigationService.GoBack();
+            };
+
+            this.DataContext = vm;
+            this.Loaded += (s, e) => vm.LoadData();
+
+        }
+
         private void AnimalAdoptionForm_Loaded(object sender, RoutedEventArgs e)
         {
             if (this.DataContext is AnimalAdoptionFormViewModel vm)

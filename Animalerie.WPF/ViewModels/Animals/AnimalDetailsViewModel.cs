@@ -22,18 +22,21 @@ namespace Animalerie.WPF.ViewModels.Animals
 
         public ObservableCollection<AnimalCompatibiliteModel> Compatibilites { get; } = new();
         public ObservableCollection<FamilleAccueilModel> FamilleAccueils { get; } = new();
+        public ObservableCollection<AdoptionModel> Adoptions { get; } = new();
 
         // Commandes
         public ICommand EditCompatCommand { get; }
         public ICommand PutInHostfamilyCommand { get; }
         public ICommand EditFamilleAccueilCommand { get; }
         public ICommand CreateAdoptionDemandCommand { get; }
+        public ICommand UpdateAdoptionDemandCommand { get; }
 
         // Events
-        public event Action<string> RequestNavigateToEditCompat;
-        public event Action<string> RequestNavigateToPutInHostFamily;
-        public event Action<int> RequestNavigateToEditHostFamily;
-        public event Action<string> RequestNavigateToAdoptionForm;
+        public event Action<string> RequestNavigateToEditCompat = null!;
+        public event Action<string> RequestNavigateToPutInHostFamily = null!;
+        public event Action<int> RequestNavigateToEditHostFamily = null!;
+        public event Action<string> RequestNavigateToAdoptionForm = null!;
+        public event Action<int> RequestNavigateToEditAdoptionForm = null!;
 
         public AnimalDetailsViewModel(IAnimalService animalService, string animalId)
         {
@@ -44,6 +47,7 @@ namespace Animalerie.WPF.ViewModels.Animals
             PutInHostfamilyCommand = new RelayCommand(_ => PutInHostfamily());
             EditFamilleAccueilCommand = new RelayCommand(param => EditFamilleAccueil(param));
             CreateAdoptionDemandCommand = new RelayCommand(_ => CreateAdoptionDemand());
+            UpdateAdoptionDemandCommand = new RelayCommand(param => UpdateAdoptionDemand(param));
 
             // l'appel de LoadData() est appelé depuis la page lors du chargement
         }
@@ -66,6 +70,13 @@ namespace Animalerie.WPF.ViewModels.Animals
                 foreach (FamilleAccueilModel f in familles)
                 {
                     FamilleAccueils.Add(f);
+                }
+
+                IEnumerable<AdoptionModel> adoptions = _animalService.ListerAdoptions(_animalId, true).Select(ad => ad.ToAdoptionModel());
+                Adoptions.Clear();
+                foreach (AdoptionModel ad in adoptions)
+                {
+                    Adoptions.Add(ad);
                 }
             }
         }
@@ -92,6 +103,14 @@ namespace Animalerie.WPF.ViewModels.Animals
         private void CreateAdoptionDemand()
         {
             RequestNavigateToAdoptionForm?.Invoke(_animalId);
+        }
+
+        private void UpdateAdoptionDemand(object? param)
+        {
+            if (param is AdoptionModel ad)
+            {
+                RequestNavigateToEditAdoptionForm?.Invoke(ad.Id);
+            }
         }
     }
 }

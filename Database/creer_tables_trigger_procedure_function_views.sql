@@ -697,7 +697,7 @@ BEGIN
     END IF;
 
     INSERT INTO ADOPTION (ani_id, adoptant_id, statut, date_demande, note)
-    VALUES (p_ani_id, p_adoptant_id, 'demande', CURRENT_DATE, p_note);
+    VALUES (p_ani_id, p_adoptant_id, 'demande', CURRENT_TIMESTAMP, p_note);
 END;
 $$ LANGUAGE plpgsql;
 
@@ -842,6 +842,7 @@ BEGIN
         WHERE ac.ani_id = p_ani_id;
 END;
 $$ LANGUAGE plpgsql;
+
 -- ===========================================================================================================================================================
 -- VIEWS
 

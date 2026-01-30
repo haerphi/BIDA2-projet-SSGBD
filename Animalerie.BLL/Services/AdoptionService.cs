@@ -30,7 +30,7 @@ namespace Animalerie.BLL.Services
             return adoption;
         }
 
-        public void Ajouter(string animalId, int contactId, string? note = null)
+        public void Ajouter(string animalId, int contactId, string? note = null, StatutAdoption statut = StatutAdoption.Demande)
         {
             Animal animal = _animalService.Consulter(animalId);
             Contact contact = _contactService.Consulter(contactId);

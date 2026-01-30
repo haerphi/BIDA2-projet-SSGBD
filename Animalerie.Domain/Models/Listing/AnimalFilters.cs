@@ -9,5 +9,6 @@ namespace Animalerie.Domain.Models.Listing
         public TypeAnimal? Type { get; set; }
         public SexeAnimal? Sexe { get; set; }
         public AnimalStatus? AnimalStatus { get; set; }
+        public bool? HasAdoptionRequest { get; set; }
     }
 }

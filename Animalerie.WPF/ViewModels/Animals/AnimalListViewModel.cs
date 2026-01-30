@@ -69,6 +69,14 @@ namespace Animalerie.WPF.ViewModels.Animals
             set { if (SetProperty(ref _filterStatus, value)) LoadAnimals(); }
         }
 
+        public IEnumerable<string?> AdoptionRequestOptions { get; } = new string?[] { "Tous", "Avec demande", "Sans demande"};
+        private string? _filterHasAdoptionRequest;
+        public string? FilterHasAdoptionRequest
+        {
+            get => _filterHasAdoptionRequest;
+            set { if (SetProperty(ref _filterHasAdoptionRequest, value)) LoadAnimals(); }
+        }
+
         // Commandes
         public ICommand ResetFiltersCommand { get; }
         public ICommand ShowDetailsCommand { get; }
@@ -89,7 +97,7 @@ namespace Animalerie.WPF.ViewModels.Animals
             ShowDetailsCommand = new RelayCommand(param => OpenDetails(param));
 
             // Chargement initial
-            LoadAnimals();
+            ResetFilters();
         }
 
         private void LoadAnimals()
@@ -99,7 +107,13 @@ namespace Animalerie.WPF.ViewModels.Animals
                 Nom = string.IsNullOrWhiteSpace(FilterNom) ? null : FilterNom,
                 Type = FilterType,
                 Sexe = FilterSexe,
-                AnimalStatus = FilterStatus
+                AnimalStatus = FilterStatus,
+                HasAdoptionRequest = FilterHasAdoptionRequest switch
+                {
+                    "Avec demande" => true,
+                    "Sans demande" => false,
+                    _ => null
+                }
             };
 
             Animaux = _animalService.Lister(filters).Select(a => a.ToAnimalListingModel());
@@ -132,19 +146,21 @@ namespace Animalerie.WPF.ViewModels.Animals
             _filterType = null;
             _filterSexe = null;
             _filterStatus = null;
+            _filterHasAdoptionRequest = "Tous";
 
             //// notifie la vue que tout a changé
             OnPropertyChanged(nameof(FilterNom));
             OnPropertyChanged(nameof(FilterType));
             OnPropertyChanged(nameof(FilterSexe));
             OnPropertyChanged(nameof(FilterStatus));
+            OnPropertyChanged(nameof(FilterHasAdoptionRequest));
 
             LoadAnimals();
         }
 
         private void OpenDetails(object? param)
         {
-            if(param is AnimalListingModel a)
+            if (param is AnimalListingModel a)
             {
                 RequestNavigateToDetails?.Invoke(a.Id);
             }

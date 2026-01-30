@@ -46,6 +46,13 @@
                               SelectedItem="{Binding FilterStatus}"/>
                 </StackPanel>
 
+                <StackPanel Margin="0,0,15,0">
+                    <Label Content="Statut :" Padding="0,0,0,2"/>
+                    <ComboBox Width="120" 
+              ItemsSource="{Binding AdoptionRequestOptions}"
+              SelectedItem="{Binding FilterHasAdoptionRequest}"/>
+                </StackPanel>
+
                 <Button Content="Réinitialiser" 
                         Command="{Binding ResetFiltersCommand}" 
                         VerticalAlignment="Bottom" Padding="10,2" Margin="10,0,0,0"/>
