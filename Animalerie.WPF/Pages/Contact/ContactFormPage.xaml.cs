@@ -1,6 +1,5 @@
 ﻿using Animalerie.BLL.Services.Interfaces;
 using Animalerie.WPF.Pages.Interfaces;
-using Animalerie.WPF.ViewModels.Animals;
 using Animalerie.WPF.ViewModels.Base;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -18,12 +17,12 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Animalerie.WPF.Pages.Animal
+namespace Animalerie.WPF.Pages.Contact
 {
     /// <summary>
-    /// Logique d'interaction pour AnimalAdoptionForm.xaml
+    /// Interaction logic for ContactFormPage.xaml
     /// </summary>
-    public partial class AnimalAdoptionForm : Page, ICanCheckDirty
+    public partial class ContactFormPage : Page, ICanCheckDirty
     {
         public bool IsDirty
         {
@@ -37,34 +36,13 @@ namespace Animalerie.WPF.Pages.Animal
             }
         }
 
-        public AnimalAdoptionForm(string animalId)
+        public ContactFormPage()
         {
             InitializeComponent();
-            var animalService = App.ServiceProvider.GetRequiredService<IAnimalService>();
+
             var contactService = App.ServiceProvider.GetRequiredService<IContactService>();
-            var adoptionService = App.ServiceProvider.GetRequiredService<IAdoptionService>();
 
-            var vm = new AnimalAdoptionFormViewModel(animalService, contactService, adoptionService, animalId);
-            
-            vm.RequestClose += () =>
-            {
-                if (this.NavigationService.CanGoBack)
-                    this.NavigationService.GoBack();
-            };
-
-            this.DataContext = vm;
-            this.Loaded += AnimalAdoptionForm_Loaded;
-
-        }
-
-        public AnimalAdoptionForm(int adoptionId)
-        {
-            InitializeComponent();
-            var animalService = App.ServiceProvider.GetRequiredService<IAnimalService>();
-            var contactService = App.ServiceProvider.GetRequiredService<IContactService>();
-            var adoptionService = App.ServiceProvider.GetRequiredService<IAdoptionService>();
-
-            var vm = new AnimalAdoptionFormViewModel(animalService, contactService, adoptionService, adoptionId);
+            var vm = new ViewModels.Contacts.ContactFormViewModel(contactService);
 
             vm.RequestClose += () =>
             {
@@ -73,17 +51,33 @@ namespace Animalerie.WPF.Pages.Animal
             };
 
             this.DataContext = vm;
-            this.Loaded += AnimalAdoptionForm_Loaded;
-
+            this.Loaded += ContactFormPage_Loaded;
         }
 
-        private void AnimalAdoptionForm_Loaded(object sender, RoutedEventArgs e)
+        public ContactFormPage(int contactId)
         {
-            if (this.DataContext is AnimalAdoptionFormViewModel vm)
+            InitializeComponent();
+
+            var contactService = App.ServiceProvider.GetRequiredService<IContactService>();
+
+            var vm = new ViewModels.Contacts.ContactFormViewModel(contactService, contactId);
+
+            vm.RequestClose += () =>
+            {
+                if (this.NavigationService.CanGoBack)
+                    this.NavigationService.GoBack();
+            };
+
+            this.DataContext = vm;
+            this.Loaded += ContactFormPage_Loaded;
+        }
+
+        private void ContactFormPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (this.DataContext is ViewModels.Contacts.ContactFormViewModel vm)
             {
                 vm.LoadData();
             }
-
         }
     }
 }

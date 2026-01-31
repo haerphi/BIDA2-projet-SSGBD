@@ -1,4 +1,5 @@
 ﻿using Animalerie.BLL.Services.Interfaces;
+using Animalerie.WPF.Pages.Contact;
 using Animalerie.WPF.ViewModels.Contacts;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -39,7 +40,7 @@ namespace Animalerie.WPF.Pages
 
         public void OnRequestNavigateToDetails(int contactId)
         {
-            //this.NavigationService.Navigate(new ContactDetailsPage(contactId));
+            this.NavigationService.Navigate(new ContactDetailsPage(contactId));
         }
     }
 }

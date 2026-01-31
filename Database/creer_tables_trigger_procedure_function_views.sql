@@ -361,16 +361,16 @@ $$ LANGUAGE plpgsql;
 -- Ajouter un role à un contact
 CREATE OR REPLACE PROCEDURE ps_ajouter_role_contact(
     p_contact_id INT,
-    p_rol_id INT
+    p_role_id INT
 ) AS
 $$
 BEGIN
     IF NOT (EXISTS (SELECT 1
                     FROM PERSONNE_ROLE
                     WHERE pers_id = p_contact_id
-                      AND rol_id = p_rol_id)) THEN
+                      AND rol_id = p_role_id)) THEN
         INSERT INTO PERSONNE_ROLE (pers_id, rol_id)
-        VALUES (p_contact_id, p_rol_id);
+        VALUES (p_contact_id, p_role_id);
     END IF;
 END;
 $$ LANGUAGE plpgsql;

@@ -1,6 +1,7 @@
 ﻿using Animalerie.BLL.Services.Interfaces;
 using Animalerie.WPF.Pages;
 using Animalerie.WPF.Pages.Compatibilite;
+using Animalerie.WPF.Pages.Contact;
 using Animalerie.WPF.Pages.Interfaces;
 using System.Windows;
 using System.Windows.Controls;
@@ -68,6 +69,11 @@ namespace Animalerie.WPF
         private void BtnContacts_Click(object sender, RoutedEventArgs e)
         {
             MainFrame.Navigate(new ContactListPage());
+        }
+
+        private void BtnAjoutContact_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new ContactFormPage());
         }
     }
 }

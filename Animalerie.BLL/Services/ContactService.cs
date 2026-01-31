@@ -5,7 +5,7 @@ using Animalerie.Domain.Models.Listing;
 
 namespace Animalerie.BLL.Services
 {
-    public class ContactService: IContactService
+    public class ContactService : IContactService
     {
         private readonly IContactRepository _contactRepository;
 
@@ -29,6 +29,29 @@ namespace Animalerie.BLL.Services
         public IEnumerable<Contact> Lister(ContactFilters? filters = null, bool includeRole = false)
         {
             return _contactRepository.Lister(filters, includeRole);
+        }
+
+        public void Ajouter(Contact contact)
+        {
+            // vérifier si le contact avec le même RegistreNational existe déjà
+            var existingContact = _contactRepository.Lister(new ContactFilters { RegistreNational = contact.RegistreNational });
+            if (existingContact.Any())
+            {
+                throw new Exception($"Un contact avec le Registre National {contact.RegistreNational} existe déjà.");
+            }
+
+            // vérifier si le contact avec le même email existe déjà
+
+            if (contact.Email is not null)
+            {
+                existingContact = _contactRepository.Lister(new ContactFilters { Email = contact.Email });
+                if (existingContact.Any())
+                {
+                    throw new Exception($"Un contact avec l'Email {contact.Email} existe déjà.");
+                }
+            }
+
+            _contactRepository.Ajouter(contact);
         }
     }
 }

@@ -1,0 +1,50 @@
+﻿<Page x:Class="Animalerie.WPF.Pages.Contact.ContactFormPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Formulaire Contact">
+
+    <ScrollViewer Margin="20">
+        <StackPanel MaxWidth="400" HorizontalAlignment="Left">
+            <TextBlock Text="Fiche Contact" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
+
+            <Label Content="Nom *"/>
+            <TextBox Text="{Binding Nom, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+
+            <Label Content="Prénom *"/>
+            <TextBox Text="{Binding Prenom, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+
+            <Label Content="Registre National *"/>
+            <TextBox Text="{Binding RegistreNational, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+
+            <Label Content="Rue"/>
+            <TextBox Text="{Binding Rue, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+
+            <UniformGrid Columns="2">
+                <StackPanel Margin="0,0,5,0">
+                    <Label Content="Code Postal"/>
+                    <TextBox Text="{Binding Cp, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+                <StackPanel Margin="5,0,0,0">
+                    <Label Content="Localité"/>
+                    <TextBox Text="{Binding Localite, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+            </UniformGrid>
+
+            <Label Content="Téléphone" Margin="0,10,0,0"/>
+            <TextBox Text="{Binding Telephone, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+
+            <Label Content="GSM"/>
+            <TextBox Text="{Binding Gsm, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+
+            <Label Content="Email" Margin="0,10,0,0"/>
+            <TextBox Text="{Binding Email, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                <Button Content="Annuler" Command="{Binding CancelCommand}" Width="80" Margin="0,0,10,0"/>
+                <Button Content="Enregistrer" Command="{Binding ValiderAdoptionCommand}" Width="100" FontWeight="Bold"/>
+            </StackPanel>
+
+            <TextBlock Text="* Champs obligatoires" FontSize="10" Foreground="Gray" Margin="0,10,0,0"/>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

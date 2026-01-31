@@ -50,6 +50,14 @@ namespace Animalerie.DAL.Repositories
                 {
                     conditions.Add("nom ILIKE '%' || @lastname || '%'");
                 }
+                if (!string.IsNullOrEmpty(filters.RegistreNational))
+                {
+                    conditions.Add("registre_national = @registernational");
+                }
+                if (!string.IsNullOrEmpty(filters.Email))
+                {
+                    conditions.Add("email ILIKE '%' || @email || '%'");
+                }
 
                 if (conditions.Any())
                 {
@@ -64,7 +72,9 @@ namespace Animalerie.DAL.Repositories
                 new
                 {
                     firstname = filters?.Firstname,
-                    lastname = filters?.Lastname
+                    lastname = filters?.Lastname,
+                    registernational = filters?.RegistreNational,
+                    email = filters?.Email
                 }
             ).ToList();
 
@@ -109,6 +119,31 @@ namespace Animalerie.DAL.Repositories
                 false,
                 new { p_contactid = contactId }
             );
+        }
+
+        public void Ajouter(Contact contact)
+        {
+            _connection.ExecuteNonQuery("ps_ajouter_contact", true, new
+            {
+                p_nom = contact.Nom,
+                p_prenom = contact.Prenom,
+                p_registre_national = contact.RegistreNational,
+                p_rue = contact.Rue,
+                p_cp = contact.Cp,
+                p_localite = contact.Localite,
+                p_gsm = contact.Gsm,
+                p_telephone = contact.Telephone,
+                p_email = contact.Email
+            });
+
+            foreach (var role in contact.Roles)
+            {
+                _connection.ExecuteNonQuery("ps_ajouter_role_contact", true, new
+                {
+                    p_contactid = contact.Id,
+                    p_roleid = role.RolId
+                });
+            }
         }
     }
 }
