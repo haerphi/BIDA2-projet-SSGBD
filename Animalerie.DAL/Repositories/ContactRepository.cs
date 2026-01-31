@@ -40,7 +40,8 @@ namespace Animalerie.DAL.Repositories
         {
             string query = "SELECT id, nom, prenom, rue, cp, localite, registre_national, gsm, telephone, email FROM CONTACT";
 
-            if (filters != null) {
+            if (filters != null)
+            {
                 List<string> conditions = [];
                 if (!string.IsNullOrEmpty(filters.Firstname))
                 {
@@ -114,7 +115,7 @@ namespace Animalerie.DAL.Repositories
         public IEnumerable<PersonneRole> ListerRoleContact(int contactId)
         {
             return _connection.ExecuteReader<PersonneRole>(
-                "SELECT fn_lister_roles_contact_table(@p_contactid)",
+                "SELECT * FROM fn_lister_roles_contact_table(@p_contactid)",
                 r => r.ToPersonneRole(),
                 false,
                 new { p_contactid = contactId }
@@ -123,7 +124,7 @@ namespace Animalerie.DAL.Repositories
 
         public void Ajouter(Contact contact)
         {
-            _connection.ExecuteNonQuery("ps_ajouter_contact", true, new
+            object? result = _connection.ExecuteScalar("SELECT ps_ajouter_contact(@p_nom, @p_prenom, @p_registre_national, @p_rue, @p_cp, @p_localite, @p_gsm, @p_telephone, @p_email)", false, new
             {
                 p_nom = contact.Nom,
                 p_prenom = contact.Prenom,
@@ -136,14 +137,57 @@ namespace Animalerie.DAL.Repositories
                 p_email = contact.Email
             });
 
+            int id = Convert.ToInt32(result);
+
+
             foreach (var role in contact.Roles)
             {
-                _connection.ExecuteNonQuery("ps_ajouter_role_contact", true, new
-                {
-                    p_contactid = contact.Id,
-                    p_roleid = role.RolId
-                });
+                AjouterRoleContact(id, role.RolId);
             }
+        }
+
+        public IEnumerable<Role> ListerRoles()
+        {
+            return _connection.ExecuteReader<Role>(
+                "SELECT id, nom FROM ROLE",
+                r => r.ToRole(),
+                false
+            ).ToList();
+        }
+
+        public void MettreAJour(Contact contact)
+        {
+            _connection.ExecuteNonQuery("ps_modifier_contact", true, new
+            {
+                p_contact_id = contact.Id,
+                p_nom = contact.Nom,
+                p_prenom = contact.Prenom,
+                p_registre_national = contact.RegistreNational,
+                p_rue = contact.Rue,
+                p_cp = contact.Cp,
+                p_localite = contact.Localite,
+                p_gsm = contact.Gsm,
+                p_telephone = contact.Telephone,
+                p_email = contact.Email
+            });
+        }
+
+        public void AjouterRoleContact(int contactId, int roleId)
+        {
+            _connection.ExecuteNonQuery("ps_ajouter_role_contact", true, new
+            {
+                p_contact_id = contactId,
+                p_role_id = roleId
+            });
+        }
+
+        public void RetirerRoleContact(int contactId, int roleId)
+        {
+            _connection.ExecuteNonQuery("ps_retirer_role_contact", true, new
+            {
+                p_contact_id = contactId,
+                p_role_id = roleId
+            });
         }
     }
 }

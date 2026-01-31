@@ -1,4 +1,5 @@
-﻿using Animalerie.Domain.Models;
+﻿using Animalerie.Domain.CustomEnums.Database;
+using Animalerie.Domain.Models;
 using System.Data;
 
 namespace Animalerie.DAL.Mappers
@@ -25,8 +26,17 @@ namespace Animalerie.DAL.Mappers
         {
             return new PersonneRole
             {
-                PersId = (int)record["pers_id"],
-                RolId = (int)record["rol_id"],
+                RolId = (int)record["role_id"],
+                Nom = (RoleNom)record["nom"]
+            };
+        }
+
+        internal static Role ToRole(this IDataRecord record)
+        {
+            return new Role
+            {
+                Id = (int)record["id"],
+                Nom = (RoleNom)record["nom"]
             };
         }
     }

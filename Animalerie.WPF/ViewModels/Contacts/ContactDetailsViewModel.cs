@@ -1,7 +1,9 @@
 ﻿using Animalerie.BLL.Services.Interfaces;
+using Animalerie.Domain.CustomEnums.Database;
 using Animalerie.WPF.Mappers;
 using Animalerie.WPF.Models.Contacts;
 using Animalerie.WPF.ViewModels.Base;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 namespace Animalerie.WPF.ViewModels.Contacts
@@ -34,7 +36,7 @@ namespace Animalerie.WPF.ViewModels.Contacts
 
         public void LoadData()
         {
-            SelectedContact = _contactService.Consulter(_contactId).ToContactModel();
+            SelectedContact = _contactService.Consulter(_contactId, true).ToContactModel();
         }
 
         // Command methods

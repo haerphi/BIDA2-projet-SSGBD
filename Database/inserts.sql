@@ -23,7 +23,7 @@ INSERT INTO COMPATIBILITE (type) VALUES
 
 -- QUELQUES DATAS
 -- ajouter une personne de contact
-CALL ps_ajouter_contact(
+SELECT ps_ajouter_contact(
         'Pines', -- p_nom
         'Dipper', -- p_prenom
         '90.12.31-456.78', -- p_registre_national
@@ -35,7 +35,7 @@ CALL ps_ajouter_contact(
         'pines.dipper@example.com'
      );
 
-CALL ps_ajouter_contact(
+SELECT ps_ajouter_contact(
         'Pines', -- p_nom
         'Mabel', -- p_prenom
         '90.12.31-456.79', -- p_registre_national
@@ -47,7 +47,7 @@ CALL ps_ajouter_contact(
         'pines.mabel@example.com'
      );
 
-CALL ps_ajouter_contact(
+SELECT ps_ajouter_contact(
         'Cypher', -- p_nom
         'Bill', -- p_prenom
         '00.00.00-000.00', -- p_registre_national

@@ -1,10 +1,5 @@
 ﻿using Animalerie.Domain.Models;
 using Animalerie.WPF.Models.Contacts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Animalerie.WPF.Mappers
 {
@@ -23,7 +18,8 @@ namespace Animalerie.WPF.Mappers
                 RegistreNational = c.RegistreNational,
                 Gsm = c.Gsm,
                 Telephone = c.Telephone,
-                Email = c.Email
+                Email = c.Email,
+                Roles = c.Roles
             };
         }
     }

@@ -51,6 +51,10 @@ CALL ps_retirer_role_contact(
         3 -- p_rol_nom
      );
 
+-- Lister les roles d'un contact
+SELECT *
+FROM fn_lister_roles_contact_table(1);
+
 -- list des contacts avec leurs rôles
 SELECT c.id, c.nom, c.prenom, r.nom AS role
 FROM contact c

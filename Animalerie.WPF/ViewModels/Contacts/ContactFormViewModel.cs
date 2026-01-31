@@ -1,6 +1,8 @@
 ﻿using Animalerie.BLL.Services.Interfaces;
+using Animalerie.Domain.CustomEnums.Database;
 using Animalerie.Domain.Models;
 using Animalerie.WPF.ViewModels.Base;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 namespace Animalerie.WPF.ViewModels.Contacts
@@ -76,6 +78,21 @@ namespace Animalerie.WPF.ViewModels.Contacts
             set => SetProperty(ref _email, value);
         }
 
+        private ObservableCollection<Role> _roles = new();
+        public ObservableCollection<Role> Roles
+        {
+            get => _roles;
+            set => SetProperty(ref _roles, value);
+        }
+
+        private List<Role> _allRoles = new();
+        public List<Role> AllRoles
+        {
+            get => _allRoles;
+            set => SetProperty(ref _allRoles, value);
+        }
+
+        public ICommand ToggleRoleCommand { get; }
         public ICommand ValiderAdoptionCommand { get; }
         public ICommand CancelCommand { get; }
 
@@ -86,6 +103,7 @@ namespace Animalerie.WPF.ViewModels.Contacts
         {
             _contactService = contactService;
 
+            ToggleRoleCommand = new RelayCommand(p => ToggleRole((Role)p!));
             ValiderAdoptionCommand = new RelayCommand(ExecuteValider, CanExecuteValider);
             CancelCommand = new RelayCommand(_ => RequestClose?.Invoke());
 
@@ -97,11 +115,13 @@ namespace Animalerie.WPF.ViewModels.Contacts
         public ContactFormViewModel(IContactService contactService, int contactId) : this(contactService)
         {
             this.contactId = contactId;
-            _exitingContact = _contactService.Consulter(contactId);
+            _exitingContact = _contactService.Consulter(contactId, true);
         }
 
         public void LoadData()
         {
+            AllRoles = _contactService.ListerRoles().ToList();
+
             if (_exitingContact is not null)
             {
                 Nom = _exitingContact.Nom;
@@ -113,9 +133,26 @@ namespace Animalerie.WPF.ViewModels.Contacts
                 Gsm = _exitingContact.Gsm;
                 Telephone = _exitingContact.Telephone;
                 Email = _exitingContact.Email;
+                var contactRoles = AllRoles.Where(ar =>
+                                    _exitingContact.Roles.Any(er => er.RolId == ar.Id)
+                                ).ToList();
+
+                Roles = new ObservableCollection<Role>(contactRoles);
 
                 IsDirty = false;
             }
+        }
+
+        private void ToggleRole(Role role)
+        {
+            // Comparaison par ID car ce sont des entités de base de données
+            var existingRole = Roles.FirstOrDefault(r => r.Id == role.Id);
+            if (existingRole != null)
+                Roles.Remove(existingRole);
+            else
+                Roles.Add(role);
+
+            IsDirty = true;
         }
 
         private void ResetForm()
@@ -142,6 +179,7 @@ namespace Animalerie.WPF.ViewModels.Contacts
 
         private void ExecuteValider(object? parameter)
         {
+
             if (contactId.HasValue && _exitingContact is not null)
             {
                 // Mode édition
@@ -154,12 +192,14 @@ namespace Animalerie.WPF.ViewModels.Contacts
                 _exitingContact.Gsm = Gsm;
                 _exitingContact.Telephone = Telephone;
                 _exitingContact.Email = Email;
-                //_contactService.Modifier(_exitingContact);
+                _exitingContact.Roles = Roles.Select(r => new PersonneRole { RolId = r.Id, Nom = r.Nom }).ToList();
+                _contactService.MettreAJour(_exitingContact);
             }
             else
             {
                 // Mode création
                 var newContact = new Contact(0, Nom, Prenom, Rue, Cp, Localite, RegistreNational, Gsm, Telephone, Email);
+                newContact.Roles = Roles.Select(r => new PersonneRole { RolId = r.Id, Nom = r.Nom }).ToList();
                 _contactService.Ajouter(newContact);
             }
             IsDirty = false;

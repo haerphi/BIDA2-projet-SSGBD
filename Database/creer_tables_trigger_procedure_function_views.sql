@@ -30,7 +30,6 @@ CREATE TABLE CONTACT
     email             VARCHAR(100),
 
     CONSTRAINT chk_moyen_contact CHECK (gsm IS NOT NULL OR telephone IS NOT NULL OR email IS NOT NULL),
-    CONSTRAINT uq_email UNIQUE (email),
     CONSTRAINT uq_registre_national UNIQUE (registre_national)
 );
 
@@ -140,13 +139,36 @@ CREATE TABLE ANI_COMPATIBILITE
 CREATE TABLE PERSONNE_ROLE
 (
     pers_id INT REFERENCES CONTACT (id),
-    rol_id  INT REFERENCES ROLE (id),
-    PRIMARY KEY (pers_id, rol_id)
+    role_id INT REFERENCES ROLE (id),
+    PRIMARY KEY (pers_id, role_id)
 );
 
 
 -- ===========================================================================================================================================================
 -- TRIGGER
+
+-- email unique de contact si email n'est pas null
+CREATE OR REPLACE FUNCTION fn_unique_email_contact()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    IF NEW.email IS NOT NULL THEN
+        IF EXISTS (SELECT 1
+                   FROM CONTACT
+                   WHERE email = NEW.email
+                     AND id <> COALESCE(NEW.id, -1)) THEN
+            RAISE EXCEPTION 'L''email % est déjà utilisé par un autre contact.', NEW.email;
+        END IF;
+    END IF;
+    RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER trg_unique_email_contact
+    BEFORE INSERT OR UPDATE
+    ON CONTACT
+    FOR EACH ROW
+EXECUTE FUNCTION fn_unique_email_contact();
 
 -- met à jour updated_at ANI_COMPATIBILITE
 CREATE OR REPLACE FUNCTION fn_update_at_ANI_COMPATIBILITE()
@@ -310,7 +332,7 @@ EXECUTE FUNCTION fn_soft_delete_animal();
 -- PROCEDURES AND FUNCTIONS
 
 -- ajouter une personne de contact
-CREATE OR REPLACE PROCEDURE ps_ajouter_contact(
+CREATE OR REPLACE FUNCTION ps_ajouter_contact(
     p_nom VARCHAR,
     p_prenom VARCHAR,
     p_registre_national CHAR,
@@ -320,14 +342,18 @@ CREATE OR REPLACE PROCEDURE ps_ajouter_contact(
     p_gsm VARCHAR DEFAULT NULL,
     p_telephone VARCHAR DEFAULT NULL,
     p_email VARCHAR DEFAULT NULL
-) AS
+) RETURNS INT AS -- On définit le type de retour ici
 $$
+DECLARE
+    v_contact_id INT;
 BEGIN
     INSERT INTO CONTACT (nom, prenom, rue, cp, localite, registre_national, gsm, telephone, email)
-    VALUES (p_nom, p_prenom, p_rue, p_cp, p_localite, p_registre_national, p_gsm, p_telephone, p_email);
+    VALUES (p_nom, p_prenom, p_rue, p_cp, p_localite, p_registre_national, p_gsm, p_telephone, p_email)
+    RETURNING id INTO v_contact_id; -- On récupère l'ID généré
+
+    RETURN v_contact_id;
 END;
 $$ LANGUAGE plpgsql;
-
 
 -- Modifier les coordonnees de la personne de contact
 CREATE OR REPLACE PROCEDURE ps_modifier_contact(
@@ -368,8 +394,8 @@ BEGIN
     IF NOT (EXISTS (SELECT 1
                     FROM PERSONNE_ROLE
                     WHERE pers_id = p_contact_id
-                      AND rol_id = p_role_id)) THEN
-        INSERT INTO PERSONNE_ROLE (pers_id, rol_id)
+                      AND role_id = p_role_id)) THEN
+        INSERT INTO PERSONNE_ROLE (pers_id, role_id)
         VALUES (p_contact_id, p_role_id);
     END IF;
 END;
@@ -378,14 +404,14 @@ $$ LANGUAGE plpgsql;
 -- Retirer un role à un contact
 CREATE OR REPLACE PROCEDURE ps_retirer_role_contact(
     p_contact_id INT,
-    p_rol_id INT
+    p_role_id INT
 ) AS
 $$
 BEGIN
     DELETE
     FROM PERSONNE_ROLE
     WHERE pers_id = p_contact_id
-      AND rol_id = p_rol_id;
+      AND role_id = p_role_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -848,8 +874,8 @@ CREATE OR REPLACE FUNCTION fn_lister_roles_contact_table(
 )
     RETURNS TABLE
             (
-                rol_id INT,
-                nom    role_nom
+                role_id INT,
+                nom     role_nom
             )
 AS
 $$
@@ -858,7 +884,7 @@ BEGIN
         SELECT r.id,
                r.nom
         FROM PERSONNE_ROLE pr
-                 JOIN ROLE r ON pr.rol_id = r.id
+                 JOIN ROLE r ON pr.role_id = r.id
         WHERE pr.pers_id = p_contact_id;
 END
 $$ LANGUAGE plpgsql;

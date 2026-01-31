@@ -42,7 +42,6 @@
 
                 <GroupBox Header="Adresse" Padding="10">
                     <StackPanel>
-                        <TextBlock Text="Rue :" FontWeight="SemiBold" Foreground="Gray"/>
                         <TextBlock Text="{Binding SelectedContact.Rue}" FontSize="16" Margin="0,0,0,5"/>
 
                         <StackPanel Orientation="Horizontal">
@@ -50,6 +49,34 @@
                             <TextBlock Text="{Binding SelectedContact.Localite}" FontSize="16"/>
                         </StackPanel>
                     </StackPanel>
+                </GroupBox>
+
+                <GroupBox Header="Rôles au sein de l'animalerie" Margin="0,0,0,15" Padding="10">
+                    <ItemsControl ItemsSource="{Binding SelectedContact.Roles}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#E1F5FE" 
+                                     BorderBrush="#3498DB" 
+                                     BorderThickness="1" 
+                                     CornerRadius="10" 
+                                     Padding="10,4" 
+                                     Margin="0,0,8,8">              
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Nom}" 
+                                            Foreground="#2980B9" 
+                                            FontWeight="SemiBold" 
+                                            FontSize="13"/> 
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </GroupBox>
             </StackPanel>
         </ScrollViewer>

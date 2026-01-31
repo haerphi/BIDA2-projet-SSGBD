@@ -8,5 +8,7 @@ namespace Animalerie.BLL.Services.Interfaces
         public Contact Consulter(int id, bool includeRole = false);
         public IEnumerable<Contact> Lister(ContactFilters? filters = null, bool includeRole = false);
         public void Ajouter(Contact contact);
+        public IEnumerable<Role> ListerRoles();
+        public void MettreAJour(Contact contact);
     }
 }

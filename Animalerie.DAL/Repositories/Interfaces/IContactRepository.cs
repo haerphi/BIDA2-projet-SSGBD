@@ -8,6 +8,11 @@ namespace Animalerie.DAL.Repositories.Interfaces
         public Contact? Consulter(int id, bool includeRole = false);
         public IEnumerable<Contact> Lister(ContactFilters? filters = null, bool includeRole = false);
         public IEnumerable<Contact> ListerParIds(IEnumerable<int> ids, bool includeRole = false);
+        public IEnumerable<PersonneRole> ListerRoleContact(int contactId);
         public void Ajouter(Contact contact);
+        public IEnumerable<Role> ListerRoles();
+        public void MettreAJour(Contact contact);
+        public void AjouterRoleContact(int contactId, int roleId);
+        public void RetirerRoleContact(int contactId, int roleId);
     }
 }
