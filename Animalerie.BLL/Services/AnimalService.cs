@@ -13,12 +13,14 @@ namespace Animalerie.BLL.Services
         private readonly IAnimalRepository _animalRepository;
         private readonly IContactService _contactService;
         private readonly ICompatibiliteService _compatibiliteService;
+        private readonly IVaccinRepository _vaccinRepository;
 
-        public AnimalService(IAnimalRepository animalRepository, IContactService contactService, ICompatibiliteService compatibiliteService)
+        public AnimalService(IAnimalRepository animalRepository, IContactService contactService, ICompatibiliteService compatibiliteService, IVaccinRepository vaccinRepository)
         {
             _animalRepository = animalRepository;
             _contactService = contactService;
             _compatibiliteService = compatibiliteService;
+            _vaccinRepository = vaccinRepository;
         }
 
         public void Ajouter(Animal animal, string[] couleurs, int contactId, RaisonEntree raison, DateTime dateEntree)
@@ -111,7 +113,7 @@ namespace Animalerie.BLL.Services
         public void ModifierFamilleAccueil(FamilleAccueil familleAccueil)
         {
             FamilleAccueil fa = ConsulterFamilelAccueil(familleAccueil.Id);
-            
+
             fa.ContactId = familleAccueil.ContactId;
             fa.DateDebut = familleAccueil.DateDebut;
             fa.DateFin = familleAccueil.DateFin;
@@ -122,6 +124,29 @@ namespace Animalerie.BLL.Services
         public IEnumerable<Adoption> ListerAdoptions(string animalId, bool includeContact = false, int offset = 0, int limit = 20)
         {
             return _animalRepository.ListerAdoptions(animalId, includeContact, offset, limit);
+        }
+
+        public IEnumerable<Vaccination> ListerVaccination(string animalId)
+        {
+            return _animalRepository.ListerVaccination(animalId);
+        }
+
+        public void VaccinerAnimal(string animalId, int vaccinId, DateTime date)
+        {
+            Animal animal = Consulter(animalId);
+            Vaccin? vaccin = _vaccinRepository.Consulter(vaccinId);
+            if (vaccin is null)
+            {
+                throw new Exception("Le vaccin spécifié n'existe pas.");
+            }
+
+            Vaccination vaccination = new Vaccination() { AniId = animalId, VacId = vaccinId, Date = date };
+            _animalRepository.VaccinerAnimal(vaccination);
+        }
+
+        public void SupprimerVaccination(int vaccinationId)
+        {
+            _animalRepository.SupprimerVaccination(vaccinationId);
         }
     }
 }

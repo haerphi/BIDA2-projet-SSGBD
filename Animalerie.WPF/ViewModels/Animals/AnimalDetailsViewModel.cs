@@ -1,9 +1,9 @@
 ﻿using Animalerie.BLL.Services.Interfaces;
+using Animalerie.Domain.Models;
 using Animalerie.WPF.Mappers;
 using Animalerie.WPF.Models.Animals;
 using Animalerie.WPF.ViewModels.Base;
 using System.Collections.ObjectModel;
-using System.Security.Permissions;
 using System.Windows.Input;
 
 namespace Animalerie.WPF.ViewModels.Animals
@@ -23,6 +23,7 @@ namespace Animalerie.WPF.ViewModels.Animals
         public ObservableCollection<AnimalCompatibiliteModel> Compatibilites { get; } = new();
         public ObservableCollection<FamilleAccueilModel> FamilleAccueils { get; } = new();
         public ObservableCollection<AdoptionModel> Adoptions { get; } = new();
+        public ObservableCollection<Vaccination> Vaccinations { get; } = new();
 
         // Commandes
         public ICommand EditCompatCommand { get; }
@@ -30,6 +31,7 @@ namespace Animalerie.WPF.ViewModels.Animals
         public ICommand EditFamilleAccueilCommand { get; }
         public ICommand CreateAdoptionDemandCommand { get; }
         public ICommand UpdateAdoptionDemandCommand { get; }
+        public ICommand UpdateVaccinationCommand { get; }
 
         // Events
         public event Action<string> RequestNavigateToEditCompat = null!;
@@ -37,6 +39,7 @@ namespace Animalerie.WPF.ViewModels.Animals
         public event Action<int> RequestNavigateToEditHostFamily = null!;
         public event Action<string> RequestNavigateToAdoptionForm = null!;
         public event Action<int> RequestNavigateToEditAdoptionForm = null!;
+        public event Action<string> RequestNavigateToUpdateVaccination = null!;
 
         public AnimalDetailsViewModel(IAnimalService animalService, string animalId)
         {
@@ -48,6 +51,7 @@ namespace Animalerie.WPF.ViewModels.Animals
             EditFamilleAccueilCommand = new RelayCommand(param => EditFamilleAccueil(param));
             CreateAdoptionDemandCommand = new RelayCommand(_ => CreateAdoptionDemand());
             UpdateAdoptionDemandCommand = new RelayCommand(param => UpdateAdoptionDemand(param));
+            UpdateVaccinationCommand = new RelayCommand(_ => UpdateVaccinnation());
 
             // l'appel de LoadData() est appelé depuis la page lors du chargement
         }
@@ -77,6 +81,13 @@ namespace Animalerie.WPF.ViewModels.Animals
                 foreach (AdoptionModel ad in adoptions)
                 {
                     Adoptions.Add(ad);
+                }
+
+                IEnumerable<Vaccination> vaccins = _animalService.ListerVaccination(_animalId);
+                Vaccinations.Clear();
+                foreach (Vaccination v in vaccins)
+                {
+                    Vaccinations.Add(v);
                 }
             }
         }
@@ -111,6 +122,11 @@ namespace Animalerie.WPF.ViewModels.Animals
             {
                 RequestNavigateToEditAdoptionForm?.Invoke(ad.Id);
             }
+        }
+
+        private void UpdateVaccinnation()
+        {
+            RequestNavigateToUpdateVaccination?.Invoke(_animalId);
         }
     }
 }

@@ -33,6 +33,7 @@ namespace Animalerie.WPF
             services.AddSingleton<IAnimalRepository, AnimalRepository>();
             services.AddSingleton<ICompatibiliteRepository, CompatibiliteRepository>();
             services.AddSingleton<IAdoptionRepository, AdoptionRepository>();
+            services.AddSingleton<IVaccinRepository, VaccinRepository>();
             #endregion
 
             #region Services
@@ -40,6 +41,7 @@ namespace Animalerie.WPF
             services.AddSingleton<IAnimalService, AnimalService>();
             services.AddSingleton<ICompatibiliteService, CompatibiliteService>();
             services.AddSingleton<IAdoptionService, AdoptionService>();
+            services.AddSingleton<IVaccinService, VaccinService>();
             #endregion
 
             services.AddTransient<MainWindow>();

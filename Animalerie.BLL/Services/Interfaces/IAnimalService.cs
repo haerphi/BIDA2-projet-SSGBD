@@ -19,5 +19,8 @@ namespace Animalerie.BLL.Services.Interfaces
         public void MettreEnFamilleAccueil(string animalId, int contactId, DateTime dateDebut, DateTime? dateFin = null);
         public void ModifierFamilleAccueil(FamilleAccueil familleAccueil);
         public IEnumerable<Adoption> ListerAdoptions(string animalId, bool includeContact = false, int offset = 0, int limit = 20);
+        public IEnumerable<Vaccination> ListerVaccination(string animalId);
+        public void VaccinerAnimal(string animalId, int vaccinId, DateTime date);
+        public void SupprimerVaccination(int vaccinationId);
     }
 }

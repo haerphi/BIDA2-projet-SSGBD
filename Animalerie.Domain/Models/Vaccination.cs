@@ -6,5 +6,7 @@
         public DateTime? Date { get; set; }
         public string AniId { get; set; }
         public int VacId { get; set; }
+
+        public Vaccin Vaccin { get; set; }
     }
 }

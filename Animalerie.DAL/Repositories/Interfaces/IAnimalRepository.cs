@@ -19,5 +19,8 @@ namespace Animalerie.DAL.Repositories.Interfaces
         public void ModifierFamilleAccueil(FamilleAccueil familleAccueil);
         public IEnumerable<Adoption> ListerAdoptions(string animalId, bool includeContact = false, int offset = 0, int limit = 20);
         public IEnumerable<Animal> ListerParIds(IEnumerable<string> ids);
+        public IEnumerable<Vaccination> ListerVaccination(string animalId);
+        public void VaccinerAnimal(Vaccination vaccination);
+        public void SupprimerVaccination(int vaccinationId);
     }
 }

@@ -18,6 +18,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <TextBlock Text="Détails de l'animal" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
@@ -152,6 +153,22 @@
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </GroupBox>
+
+                <GroupBox Grid.Row="6" Header="Vaccinations" Margin="0,0,0,20">
+                    <StackPanel Orientation="Vertical" Margin="0,0,0,10">
+                        <Button Content="Gérer les vaccins" Command="{Binding UpdateVaccinationCommand}" Width="auto" Padding="10,5" Margin="0,0,10,10" HorizontalAlignment="Left" />
+
+                        <DataGrid ItemsSource="{Binding Vaccinations}" 
+                  AutoGenerateColumns="False" 
+                  IsReadOnly="True"
+                  HeadersVisibility="Column">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Vaccin" Binding="{Binding Vaccin.Nom}" Width="*" />
+                                <DataGridTextColumn Header="Date" Binding="{Binding Date, StringFormat=d}" Width="Auto" />
                             </DataGrid.Columns>
                         </DataGrid>
                     </StackPanel>

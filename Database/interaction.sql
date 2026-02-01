@@ -178,7 +178,7 @@ FROM ani_sortie;
 
 SELECT a.*
 FROM vue_animaux a
-    LEFT JOIN ADOPTION ad ON a.id = ad.ani_id
+         LEFT JOIN ADOPTION ad ON a.id = ad.ani_id
 WHERE a.deleted_at IS NULL
   AND a.status NOT LIKE 'adoption|%';
 
@@ -197,8 +197,7 @@ CALL ps_ajouter_vaccination_animal(
 
 -- Supprimer un vaccin (d'un animal)
 CALL ps_supprimer_vaccination_animal(
-        '25122200000', -- p_ani_id
-        1 -- p_vaccin_id
+        1
      );
 
 -- Lister les vaccins
@@ -206,8 +205,9 @@ SELECT *
 FROM vaccin;
 
 -- Lister les vaccinations d’un animal
-SELECT *
-FROM vaccination
+SELECT va.*, v.*
+FROM vaccination va
+         JOIN vaccin v ON va.vac_id = v.id
 WHERE ani_id = '25122200000';
 
 -- Ajouter compatibilite

@@ -342,7 +342,7 @@ CREATE OR REPLACE FUNCTION ps_ajouter_contact(
     p_gsm VARCHAR DEFAULT NULL,
     p_telephone VARCHAR DEFAULT NULL,
     p_email VARCHAR DEFAULT NULL
-) RETURNS INT AS -- On définit le type de retour ici
+) RETURNS INT AS
 $$
 DECLARE
     v_contact_id INT;
@@ -739,6 +739,35 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Créer un vaccin
+CREATE OR REPLACE FUNCTION ps_ajouter_vaccin(
+    p_nom VARCHAR
+) RETURNS INT AS
+$$
+DECLARE
+    v_vaccin_id INT;
+BEGIN
+    INSERT INTO VACCIN (nom)
+    VALUES (p_nom)
+    RETURNING id INTO v_vaccin_id;
+
+    RETURN v_vaccin_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Mettre à jour un vaccin
+CREATE OR REPLACE PROCEDURE ps_modifier_vaccin(
+    p_vaccin_id INT,
+    p_nom VARCHAR
+) AS
+$$
+BEGIN
+    UPDATE VACCIN
+    SET nom = p_nom
+    WHERE id = p_vaccin_id;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Ajouter un vaccin (date du vaccin, nom du vaccin, fait ou non fait) à un animal
 CREATE OR REPLACE PROCEDURE ps_ajouter_vaccination_animal(
     p_ani_id CHAR(11),
@@ -763,15 +792,13 @@ $$ LANGUAGE plpgsql;
 
 -- Supprimer un vaccin (d'un animal)
 CREATE OR REPLACE PROCEDURE ps_supprimer_vaccination_animal(
-    p_ani_id CHAR(11),
-    p_vac_id int
+    p_vaccination_id INT
 ) AS
 $$
 BEGIN
     DELETE
     FROM VACCINATION
-    WHERE ani_id = p_ani_id
-      AND vac_id = p_vac_id;
+    WHERE id = p_vaccination_id;
 END;
 $$ LANGUAGE plpgsql;
 

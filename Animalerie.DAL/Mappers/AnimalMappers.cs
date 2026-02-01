@@ -25,6 +25,6 @@ namespace Animalerie.DAL.Mappers
             a.Status = record["status"] == DBNull.Value ? null : (string)record["status"];
 
             return a;
-        } 
+        }
     }
 }

@@ -3,7 +3,6 @@ using Animalerie.DAL.Repositories.Interfaces;
 using Animalerie.Domain.CustomEnums.Database;
 using Animalerie.Domain.Models;
 using Animalerie.Domain.Models.Listing;
-using System.Data.Common;
 using Tools.Database;
 
 namespace Animalerie.DAL.Repositories
@@ -247,6 +246,36 @@ namespace Animalerie.DAL.Repositories
             }
 
             return animals;
+        }
+
+        public IEnumerable<Vaccination> ListerVaccination(string animalId)
+        {
+            return _dbContext.Connection.ExecuteReader<Vaccination>(
+                "SELECT va.id as va_id, date, ani_id, vac_id, nom FROM vaccination va " +
+                "JOIN vaccin v ON va.vac_id = v.id " +
+                "WHERE ani_id = @p_ani_id",
+                (r) => r.ToVaccination(),
+                false,
+                new { p_ani_id = animalId }
+            );
+        }
+
+        public void VaccinerAnimal(Vaccination vaccination)
+        {
+            _dbContext.Connection.ExecuteNonQuery("ps_ajouter_vaccination_animal", true, new
+            {
+                p_ani_id = vaccination.AniId,
+                p_vac_id = vaccination.VacId,
+                p_date = vaccination.Date
+            });
+        }
+
+        public void SupprimerVaccination(int vaccinationId)
+        {
+            _dbContext.Connection.ExecuteNonQuery("ps_supprimer_vaccination_animal", true, new
+            {
+                p_vaccination_id = vaccinationId
+            });
         }
     }
 }

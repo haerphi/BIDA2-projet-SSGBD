@@ -21,6 +21,7 @@ namespace Animalerie.WPF.Pages.Animal
             vm.RequestNavigateToEditHostFamily += OnRequestNavigateToEditHostFamily;
             vm.RequestNavigateToAdoptionForm += OnRequestNavigateToAdoptionForm;
             vm.RequestNavigateToEditAdoptionForm += OnRequestNavigateToEditAdoptionForm;
+            vm.RequestNavigateToUpdateVaccination += OnRequestNavigateToUpdateVaccination;
             this.DataContext = vm;
 
             this.Loaded += AnimalDetailsPage_Loaded;
@@ -55,6 +56,11 @@ namespace Animalerie.WPF.Pages.Animal
         public void OnRequestNavigateToEditAdoptionForm(int adoptionId)
         {
             this.NavigationService.Navigate(new AnimalAdoptionForm(adoptionId));
+        }
+
+        public void OnRequestNavigateToUpdateVaccination(string animalId)
+        {
+            this.NavigationService.Navigate(new AnimalEditVaccinationPage(animalId));
         }
     }
 }

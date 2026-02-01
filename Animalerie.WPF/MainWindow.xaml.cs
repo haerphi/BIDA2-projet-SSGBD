@@ -3,6 +3,7 @@ using Animalerie.WPF.Pages;
 using Animalerie.WPF.Pages.Compatibilite;
 using Animalerie.WPF.Pages.Contact;
 using Animalerie.WPF.Pages.Interfaces;
+using Animalerie.WPF.Pages.Vaccin;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -74,6 +75,11 @@ namespace Animalerie.WPF
         private void BtnAjoutContact_Click(object sender, RoutedEventArgs e)
         {
             MainFrame.Navigate(new ContactFormPage());
+        }
+
+        private void BtnVaccins_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new VaccinPage());
         }
     }
 }
