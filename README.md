@@ -17,6 +17,7 @@ L'application est structurée en 6 dossiers principaux (dont 5 projets .NET) :
 - **Animalerie.DAL**: projet qui contient toutes les interactions avec la base de données, y compris les entités et les migrations.
 - **Animalerie.BLL**: projet qui contient la logique métier de l'application et utilise le DAL pour interagir avec la base de données.
 - **Animalerie.ConsoleApp**: projet qui contient l'application console principale permettant d'interagir avec l'utilisateur et d'utiliser la BLL pour gérer les animaux et les personnes de contact.
+- **Animalerie.WPF**: projet qui contient l'application WPF pour une interface utilisateur graphique.
 
 ## Pré-requis
 
@@ -28,3 +29,6 @@ L'application est structurée en 6 dossiers principaux (dont 5 projets .NET) :
 1. Cloner le dépôt GitHub.
 2. Exécuter les script SQL `creer_tables_trigger_procedure_function_views.sql` et `inserts.sql` dans le dossier `Database` pour créer la base de données.
 3. Ouvrir le fichier de solution dans un IDE compatible avec .NET (comme Visual Studio ou JetBrains Rider).
+4. Modifier la connection string dans:
+   - Pour l'application console: `Animalerie.ConsoleApp/Program.cs`
+   - Pour l'application WPF: `Animalerie.WPF\App.xaml.cs`
