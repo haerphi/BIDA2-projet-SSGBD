@@ -682,6 +682,8 @@ CREATE OR REPLACE PROCEDURE ps_ajouter_adoption(
     p_note TEXT
 ) AS
 $$
+DECLARE
+    v_animal_statut VARCHAR;
 BEGIN
     -- check si l'animal est decede
     IF EXISTS (SELECT 1
@@ -691,24 +693,11 @@ BEGIN
         RAISE EXCEPTION 'Impossible de creer une adoption pour un animal decede.';
     END IF;
 
-    -- check (s'il n'y a pas de sortie) OU (si il n'y a pas d'entree après la dernière sortie et que la dernière sortie est une adoption)
-    IF EXISTS (SELECT 1
-               FROM ANIMAL a
-               WHERE a.id = p_ani_id
-                 AND (
-                   NOT EXISTS (SELECT 1
-                               FROM ANI_SORTIE s
-                               WHERE s.ani_id = a.id)
-                       OR EXISTS (SELECT 1
-                                  FROM ANI_SORTIE s
-                                  WHERE s.ani_id = a.id
-                                    AND s.date >= (SELECT MAX(e.date)
-                                                   FROM ANI_ENTREE e
-                                                   WHERE e.ani_id = a.id)
-                                    AND s.raison = 'adoption')
-                   ))
-    THEN
+    -- check récupérer le statut de l'animal et vérifier que ça ne soit pas "adoption"
+    SELECT fn_animal_status(p_ani_id) INTO v_animal_statut;
 
+    IF (v_animal_statut LIKE 'adoption|%')
+    THEN
         RAISE EXCEPTION 'Impossible de creer une adoption : l''animal n''est pas actuellement disponible pour adoption.';
     END IF;
 

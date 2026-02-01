@@ -1,4 +1,5 @@
 ﻿using Animalerie.BLL.Services.Interfaces;
+using Animalerie.DAL.Repositories;
 using Animalerie.DAL.Repositories.Interfaces;
 using Animalerie.Domain.Models;
 using Animalerie.Domain.Models.Listing;
@@ -8,10 +9,12 @@ namespace Animalerie.BLL.Services
     public class ContactService : IContactService
     {
         private readonly IContactRepository _contactRepository;
+        private readonly IAnimalRepository _animalRepository;
 
-        public ContactService(IContactRepository contactRepository)
+        public ContactService(IContactRepository contactRepository, IAnimalRepository animalRepository)
         {
             _contactRepository = contactRepository;
+            _animalRepository = animalRepository;
         }
 
         public Contact Consulter(int id, bool includeRole = false)
@@ -97,6 +100,22 @@ namespace Animalerie.BLL.Services
             {
                 _contactRepository.RetirerRoleContact(contact.Id, role.RolId);
             }
+        }
+
+        public IEnumerable<Adoption> ListerAdoptions(int contactId, bool includeAnimal = false, int offset = 0, int limit = 20)
+        {
+            IEnumerable<Adoption> adoptions = _contactRepository.ListerAdoptions(contactId, offset, limit);
+            if (includeAnimal && adoptions.Any())
+            {
+                var animalIds = adoptions.Select(a => a.AniId).Distinct();
+                var animals = _animalRepository.ListerParIds(animalIds).ToList();
+                foreach (var adoption in adoptions)
+                {
+                    adoption.Animal = animals.FirstOrDefault(a => a.Id == adoption.AniId);
+                }
+            }
+
+            return adoptions;
         }
     }
 }

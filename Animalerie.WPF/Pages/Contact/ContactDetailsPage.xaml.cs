@@ -1,4 +1,5 @@
 ﻿using Animalerie.BLL.Services.Interfaces;
+using Animalerie.WPF.Pages.Animal;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,7 @@ namespace Animalerie.WPF.Pages.Contact
             var vm = new ViewModels.Contacts.ContactDetailsViewModel(service, contactId);
 
             vm.RequestNavigateToEditContact += OnRequestNavigateToEditContact;
+            vm.RequestNavigateToEditAdoptionForm += OnRequestNavigateToEditAdoptionForm;
 
             this.DataContext = vm;
 
@@ -46,6 +48,11 @@ namespace Animalerie.WPF.Pages.Contact
         public void OnRequestNavigateToEditContact(int contactId)
         {
             this.NavigationService.Navigate(new ContactFormPage(contactId));
+        }
+
+        public void OnRequestNavigateToEditAdoptionForm(int adoptionId)
+        {
+            this.NavigationService.Navigate(new AnimalAdoptionForm(adoptionId));
         }
     }
 }

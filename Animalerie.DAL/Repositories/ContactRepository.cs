@@ -189,5 +189,21 @@ namespace Animalerie.DAL.Repositories
                 p_role_id = roleId
             });
         }
+
+        public IEnumerable<Adoption> ListerAdoptions(int contactId, int offset = 0, int limit = 20)
+        {
+            List<Adoption> adoptions = _connection.ExecuteReader<Adoption>(
+                "SELECT * FROM adoption WHERE adoptant_id = @p_adoptant_id ORDER BY date_demande DESC LIMIT @p_limit OFFSET @p_offset",
+                (r) => r.ToAdoption(),
+                false,
+                new
+                {
+                    p_adoptant_id = contactId,
+                    p_limit = limit,
+                    p_offset = offset
+                }
+            ).ToList();
+            return adoptions;
+        }
     }
 }

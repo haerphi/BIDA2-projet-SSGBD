@@ -10,5 +10,6 @@ namespace Animalerie.BLL.Services.Interfaces
         public void Ajouter(Contact contact);
         public IEnumerable<Role> ListerRoles();
         public void MettreAJour(Contact contact);
+        public IEnumerable<Adoption> ListerAdoptions(int contactId, bool includeAnimal = false, int offset = 0, int limit = 20);
     }
 }

@@ -233,5 +233,20 @@ namespace Animalerie.DAL.Repositories
             }
             return adoptions;
         }
+
+        public IEnumerable<Animal> ListerParIds(IEnumerable<string> ids)
+        {
+            IEnumerable<Animal> animals = Enumerable.Empty<Animal>();
+            if (ids.Any())
+            {
+                animals = _dbContext.Connection.ExecuteReader<Animal>(
+                    $"SELECT * FROM vue_animaux WHERE id IN ({String.Join(',', ids.Select(i => $"'{i}'"))})",
+                    r => r.ToAnimal(),
+                    false
+                ).ToList();
+            }
+
+            return animals;
+        }
     }
 }

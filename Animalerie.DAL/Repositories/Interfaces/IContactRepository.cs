@@ -14,5 +14,6 @@ namespace Animalerie.DAL.Repositories.Interfaces
         public void MettreAJour(Contact contact);
         public void AjouterRoleContact(int contactId, int roleId);
         public void RetirerRoleContact(int contactId, int roleId);
+        public IEnumerable<Adoption> ListerAdoptions(int contactId, int offset = 0, int limit = 20);
     }
 }

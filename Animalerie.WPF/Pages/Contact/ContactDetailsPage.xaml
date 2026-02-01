@@ -66,17 +66,41 @@
                                      BorderThickness="1" 
                                      CornerRadius="10" 
                                      Padding="10,4" 
-                                     Margin="0,0,8,8">              
+                                     Margin="0,0,8,8">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding Nom}" 
                                             Foreground="#2980B9" 
                                             FontWeight="SemiBold" 
-                                            FontSize="13"/> 
+                                            FontSize="13"/>
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                </GroupBox>
+                <GroupBox Grid.Row="4" Header="Demandes d'adoption" Margin="0,0,0,20">
+                    <StackPanel Orientation="Vertical" Margin="0,0,0,10">
+                        <DataGrid ItemsSource="{Binding Adoptions}" 
+                            AutoGenerateColumns="False" 
+                            IsReadOnly="True"
+                            HeadersVisibility="Column">     
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Animal" Binding="{Binding Animal.Nom}" Width="*"/>
+                                <DataGridTextColumn Header="Status" Binding="{Binding Statut}" Width="*"/>
+                                <DataGridTextColumn Header="Fais le" Binding="{Binding DateDemande, StringFormat=\{0:dd.MM.yy HH:mm:ss\}}" Width="*"/>
+                                <DataGridTemplateColumn Header="Actions" Width="100">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="Modifier"
+                              Command="{Binding DataContext.UpdateAdoptionDemandCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                              CommandParameter="{Binding}"
+                              Margin="5,0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
                 </GroupBox>
             </StackPanel>
         </ScrollViewer>
